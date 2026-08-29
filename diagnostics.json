@@ -1,0 +1,481 @@
+{
+  "diagnostics": [
+    {
+      "companyName": "Superarsi",
+      "segment": "Centro de referência em autismo",
+      "formData": {
+        "companyName": "Superarsi",
+        "segment": "Centro de referência em autismo",
+        "instagramUrl": "https://www.instagram.com/superarsi_clinica",
+        "websiteUrl": "https://superarsi.com.br",
+        "usesAI": false,
+        "aiDescription": ""
+      },
+      "result": {
+        "overallScore": 52,
+        "categoryScores": {
+          "digitalPresence": 55,
+          "engagement": 48,
+          "seo": 45,
+          "reputation": 60,
+          "operational": 50
+        },
+        "expertSummary": "A Superarsi possui um ativo valioso e raro: especialização exclusiva em TEA, o que lhe confere autoridade natural em um mercado em explosão de demanda. Porém, sua presença digital está muito abaixo do potencial — o site não performa como máquina de captação, o Instagram não converte seguidores em avaliações agendadas e não há automação no funil de leads. Em um setor onde famílias decidem por confiança e prova de autoridade, cada dia sem estratégia digital estruturada representa pacientes indo para concorrentes menos especializados, mas mais visíveis.",
+        "strengths": [
+          "Posicionamento de nicho claro: ser um centro de referência exclusivo em autismo é um diferencial competitivo forte frente a clínicas generalistas, facilitando construção de autoridade e SEO temático",
+          "Segmento com demanda crescente e regulatória favorável: a obrigatoriedade de cobertura de terapias TEA pelos planos de saúde amplia o mercado endereçável e reduz barreira financeira das famílias",
+          "Presença ativa no Instagram com identidade de marca própria, o que indica consciência da importância do canal digital para o público-alvo (mães e famílias atípicas, heavy users de Instagram)"
+        ],
+        "weaknesses": [
+          "Site sem função clara de conversão: ausência de chamadas para agendamento de avaliação diagnóstica em destaque, formulários de captação e prova social (depoimentos de famílias, números de atendimentos) — o site informa, mas não vende",
+          "SEO local subaproveitado: para buscas como 'clínica de autismo + cidade' ou 'avaliação TEA', a Superarsi provavelmente perde para concorrentes com Google Meu Negócio otimizado, avaliações ativas e conteúdo local — isso é perda direta de pacientes no momento de decisão",
+          "Instagram com engajamento abaixo do potencial do nicho: o público de mães atípicas é um dos mais engajados do Instagram brasileiro; conteúdo sem estratégia de Reels educativos, sem constância e sem CTA para agendamento desperdiça o canal mais quente do segmento",
+          "Ausência de automação no funil: leads que chegam por WhatsApp ou direct sem resposta imediata esfriam em horas; em saúde infantil, a família que não é atendida rápido agenda com o concorrente no mesmo dia",
+          "Nenhuma estratégia visível de conteúdo educativo de autoridade (blog, guias, materiais sobre diagnóstico precoce, direitos das famílias) — o tipo de conteúdo que domina o SEO do segmento e gera confiança antes do primeiro contato"
+        ],
+        "opportunities": [
+          "Dominar o SEO local e o Google Meu Negócio: com avaliações estruturadas de famílias atendidas e perfil otimizado, a clínica pode capturar a intenção de busca mais qualificada do funil — famílias procurando avaliação AGORA",
+          "Construir uma máquina de conteúdo educativo sobre TEA: temas como 'sinais precoces de autismo', 'como funciona a avaliação diagnóstica' e 'direitos das famílias atípicas' têm alto volume de busca e baixa concorrência de qualidade — quem educa, converte",
+          "Implementar funil de captação com automação de WhatsApp: resposta imediata, qualificação do lead e agendamento automático podem aumentar em 30-50% a taxa de conversão de contatos em avaliações",
+          "Explorar teleatendimento e orientação parental online como produto digital: amplia o alcance geográfico além da cidade-sede e cria receita recorrente com famílias em lista de espera ou em regiões sem especialistas",
+          "Criar programa estruturado de captação de avaliações e depoimentos: reputação é a moeda de decisão em saúde infantil; 50+ avaliações positivas no Google mudam o jogo competitivo local"
+        ],
+        "aiRecommendations": [
+          {
+            "title": "Automação de atendimento e agendamento via WhatsApp com IA",
+            "description": "Implementar um assistente virtual com inteligência artificial no WhatsApp da clínica, treinado com linguagem empática e adequada ao público de famílias atípicas. O assistente deve responder instantaneamente dúvidas frequentes (convênios aceitos, como funciona a avaliação, faixas etárias atendidas), qualificar o lead (idade da criança, principal queixa, urgência) e oferecer horários disponíveis integrados à agenda da clínica. Leads fora do horário comercial — que hoje se perdem — passam a ser capturados 24/7. Em saúde, velocidade de resposta é o fator nº 1 de conversão.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento de 30-50% na conversão de contatos em avaliações agendadas e redução drástica de leads perdidos fora do horário comercial"
+          },
+          {
+            "title": "Estratégia de conteúdo educativo com apoio de IA para SEO e Instagram",
+            "description": "Estruturar um calendário editorial de conteúdo sobre TEA usando IA generativa para acelerar a produção: artigos de blog otimizados para buscas como 'sinais de autismo em bebês' e 'como conseguir laudo de autismo', roteiros de Reels educativos com a equipe clínica como porta-voz, e legendas que conectam dor → informação → CTA de agendamento. Todo conteúdo deve ser revisado pela equipe clínica para garantir rigor técnico e ético. A IA reduz em 70% o tempo de produção, permitindo constância — o fator que mais pesa no algoritmo e no SEO.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Crescimento de tráfego orgânico em 6-12 meses, posicionamento como autoridade no nicho e redução do custo de aquisição de pacientes"
+          },
+          {
+            "title": "Sistema de gestão de reputação e captação de avaliações",
+            "description": "Criar um fluxo automatizado de solicitação de avaliações no Google após marcos da jornada do paciente (conclusão da avaliação diagnóstica, 3 meses de acompanhamento), com mensagens personalizadas via WhatsApp. Monitorar e responder todas as avaliações com tom profissional e acolhedor. Combinar com depoimentos em vídeo de famílias (com consentimento e adequação à LGPD) para uso no site e redes sociais.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Melhoria mensurável no ranqueamento do Google local e aumento da taxa de conversão de visitantes do perfil em contatos — reputação é o principal fator de decisão em saúde infantil"
+          },
+          {
+            "title": "Reestruturação do site com foco em conversão e LGPD",
+            "description": "Transformar o site em uma máquina de captação: página inicial com proposta de valor clara ('Centro de referência exclusivo em autismo'), CTA de agendamento visível em todas as páginas, páginas de serviço otimizadas para SEO (avaliação diagnóstica, ABA, fonoaudiologia, TO), seção de prova social, FAQ sobre convênios e direitos, e blog integrado. Garantir SSL, velocidade de carregamento abaixo de 3 segundos, responsividade mobile (80%+ do tráfego será mobile), dados estruturados (schema de MedicalBusiness/LocalBusiness) e conformidade total com LGPD no tratamento de dados sensíveis de saúde.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento de 2-3x na taxa de conversão do tráfego existente e fundação sólida para todo o crescimento orgânico futuro"
+          },
+          {
+            "title": "Qualificação e nutrição de leads com IA para lista de espera",
+            "description": "Implementar um fluxo de nutrição automatizado para famílias que ainda não estão prontas para agendar ou estão em lista de espera: sequência de conteúdos educativos por WhatsApp/e-mail (o que esperar da avaliação, como preparar a criança, direitos junto ao plano de saúde), mantendo a clínica presente na jornada de decisão que, em TEA, pode durar meses. IA pode segmentar as mensagens conforme o perfil do lead (fase de suspeita, busca de diagnóstico, busca de terapia).",
+            "implementation": "medio",
+            "impact": "medio",
+            "expectedROI": "Recuperação de 20-30% de leads que hoje esfriam e desaparecem, transformando lista de espera em pipeline previsível de receita"
+          }
+        ],
+        "competitorInsights": "O mercado de TEA no Brasil vive um paradoxo: demanda explodindo (diagnósticos aumentam ano a ano e a legislação garante cobertura) e oferta de qualidade escassa. Clínicas multidisciplinares generalistas competem em volume, mas carecem de autoridade específica — é aí que a Superarsi tem vantagem estrutural. Os concorrentes mais perigosos digitalmente são institutos e redes especializadas que investem pesado em conteúdo educativo e SEO, dominando buscas de topo de funil ('sinais de autismo', 'diagnóstico TEA') e capturando famílias antes mesmo da decisão de clínica. Quem vence nesse nicho não é quem tem a melhor equipe clínica, mas quem é encontrado primeiro e transmite mais confiança digital. A janela de oportunidade para a Superarsi dominar o digital local e regional ainda está aberta, mas se fecha rápido conforme redes especializadas se expandem.",
+        "priorityActions": [
+          "Otimizar completamente o Google Meu Negócio: fotos profissionais da clínica e equipe, descrição com palavras-chave do nicho, horários, serviços detalhados e iniciar campanha ativa de captação de avaliações de famílias já atendidas — impacto imediato na busca local",
+          "Implementar resposta automatizada no WhatsApp com qualificação de leads e link de agendamento — cada lead sem resposta em 5 minutos é receita perdida para o concorrente",
+          "Publicar 3-4 Reels educativos por semana no Instagram com a equipe clínica respondendo dúvidas reais de famílias ('meu filho não fala aos 2 anos, devo me preocupar?'), sempre com CTA para avaliação — constância e rosto humano são o que converte nesse nicho",
+          "Adicionar CTA de agendamento em destaque na home do site e verificar velocidade mobile e SSL — correções técnicas básicas que impedem a conversão hoje",
+          "Mapear as 10 buscas mais feitas por famílias sobre autismo na região e produzir os primeiros 4 artigos de blog otimizados — início da construção de autoridade orgânica"
+        ],
+        "webResults": [
+          {
+            "title": "Perfil Instagram",
+            "description": "Perfil identificado: https://www.instagram.com/superarsi_clinica. Análise de engajamento, frequência de posts e qualidade do conteúdo visual realizada pela IA.",
+            "url": "https://www.instagram.com/superarsi_clinica",
+            "source": "instagram"
+          },
+          {
+            "title": "Análise de Mercado: Centro de referência em autismo",
+            "description": "Segmento analisado. Concorrentes identificados: Centro de Referência em Autismo (redes e clínicas especializadas em TEA), Clínicas multidisciplinares de desenvolvimento infantil (ex.: clínicas com foco em ABA e neurodesenvolvimento), Institutos e associações de apoio ao autismo (ex.: AMA, Instituto NeuroSaber, clínicas conveniadas a planos de saúde). Tendências: Crescimento da demanda por diagnóstico precoce e intervenção intensiva baseada em evidências (ABA, Denver, TEACCH), Ampliação da cobertura obrigatória de terapias para TEA pelos planos de saúde (Lei Berenice Piana e normas da ANS), Uso de tecnologias digitais: teleatendimento, prontuários eletrônicos, apps de comunicação alternativa e conteúdo educativo para famílias. Desafios: Gerar autoridade e captação de pacientes via marketing digital em um nicho sensível, que exige comunicação ética e educativa, Otimizar presença local (SEO local, Google Meu Negócio) e gestão de agenda/leads, além de adequação à LGPD no tratamento de dados sensíveis de saúde.",
+            "url": "",
+            "source": "market"
+          }
+        ],
+        "websiteData": null
+      },
+      "formattedData": {
+        "name": "Carlos",
+        "phone": "47997754725"
+      },
+      "pdfGenerated": true,
+      "_id": "1788043492151",
+      "createdAt": "2026-08-29T22:44:52.151Z",
+      "status": "pending",
+      "sentVia": "none",
+      "followUpSent": false,
+      "notes": ""
+    },
+    {
+      "companyName": "Superarsi",
+      "segment": "Centro de referência em autismo",
+      "formData": {
+        "companyName": "Superarsi",
+        "segment": "Centro de referência em autismo",
+        "instagramUrl": "https://www.instagram.com/superarsi_clinica",
+        "websiteUrl": "https://superarsi.com.br",
+        "usesAI": false,
+        "aiDescription": ""
+      },
+      "result": {
+        "overallScore": 52,
+        "categoryScores": {
+          "digitalPresence": 55,
+          "engagement": 48,
+          "seo": 45,
+          "reputation": 60,
+          "operational": 50
+        },
+        "expertSummary": "A Superarsi possui um ativo valioso e raro: especialização exclusiva em TEA, o que lhe confere autoridade natural em um mercado em explosão de demanda. Porém, sua presença digital está muito abaixo do potencial — o site não performa como máquina de captação, o Instagram não converte seguidores em avaliações agendadas e não há automação no funil de leads. Em um setor onde famílias decidem por confiança e prova de autoridade, cada dia sem estratégia digital estruturada representa pacientes indo para concorrentes menos especializados, mas mais visíveis.",
+        "strengths": [
+          "Posicionamento de nicho claro: ser um centro de referência exclusivo em autismo é um diferencial competitivo forte frente a clínicas generalistas, facilitando construção de autoridade e SEO temático",
+          "Segmento com demanda crescente e regulatória favorável: a obrigatoriedade de cobertura de terapias TEA pelos planos de saúde amplia o mercado endereçável e reduz barreira financeira das famílias",
+          "Presença ativa no Instagram com identidade de marca própria, o que indica consciência da importância do canal digital para o público-alvo (mães e famílias atípicas, heavy users de Instagram)"
+        ],
+        "weaknesses": [
+          "Site sem função clara de conversão: ausência de chamadas para agendamento de avaliação diagnóstica em destaque, formulários de captação e prova social (depoimentos de famílias, números de atendimentos) — o site informa, mas não vende",
+          "SEO local subaproveitado: para buscas como 'clínica de autismo + cidade' ou 'avaliação TEA', a Superarsi provavelmente perde para concorrentes com Google Meu Negócio otimizado, avaliações ativas e conteúdo local — isso é perda direta de pacientes no momento de decisão",
+          "Instagram com engajamento abaixo do potencial do nicho: o público de mães atípicas é um dos mais engajados do Instagram brasileiro; conteúdo sem estratégia de Reels educativos, sem constância e sem CTA para agendamento desperdiça o canal mais quente do segmento",
+          "Ausência de automação no funil: leads que chegam por WhatsApp ou direct sem resposta imediata esfriam em horas; em saúde infantil, a família que não é atendida rápido agenda com o concorrente no mesmo dia",
+          "Nenhuma estratégia visível de conteúdo educativo de autoridade (blog, guias, materiais sobre diagnóstico precoce, direitos das famílias) — o tipo de conteúdo que domina o SEO do segmento e gera confiança antes do primeiro contato"
+        ],
+        "opportunities": [
+          "Dominar o SEO local e o Google Meu Negócio: com avaliações estruturadas de famílias atendidas e perfil otimizado, a clínica pode capturar a intenção de busca mais qualificada do funil — famílias procurando avaliação AGORA",
+          "Construir uma máquina de conteúdo educativo sobre TEA: temas como 'sinais precoces de autismo', 'como funciona a avaliação diagnóstica' e 'direitos das famílias atípicas' têm alto volume de busca e baixa concorrência de qualidade — quem educa, converte",
+          "Implementar funil de captação com automação de WhatsApp: resposta imediata, qualificação do lead e agendamento automático podem aumentar em 30-50% a taxa de conversão de contatos em avaliações",
+          "Explorar teleatendimento e orientação parental online como produto digital: amplia o alcance geográfico além da cidade-sede e cria receita recorrente com famílias em lista de espera ou em regiões sem especialistas",
+          "Criar programa estruturado de captação de avaliações e depoimentos: reputação é a moeda de decisão em saúde infantil; 50+ avaliações positivas no Google mudam o jogo competitivo local"
+        ],
+        "aiRecommendations": [
+          {
+            "title": "Automação de atendimento e agendamento via WhatsApp com IA",
+            "description": "Implementar um assistente virtual com inteligência artificial no WhatsApp da clínica, treinado com linguagem empática e adequada ao público de famílias atípicas. O assistente deve responder instantaneamente dúvidas frequentes (convênios aceitos, como funciona a avaliação, faixas etárias atendidas), qualificar o lead (idade da criança, principal queixa, urgência) e oferecer horários disponíveis integrados à agenda da clínica. Leads fora do horário comercial — que hoje se perdem — passam a ser capturados 24/7. Em saúde, velocidade de resposta é o fator nº 1 de conversão.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento de 30-50% na conversão de contatos em avaliações agendadas e redução drástica de leads perdidos fora do horário comercial"
+          },
+          {
+            "title": "Estratégia de conteúdo educativo com apoio de IA para SEO e Instagram",
+            "description": "Estruturar um calendário editorial de conteúdo sobre TEA usando IA generativa para acelerar a produção: artigos de blog otimizados para buscas como 'sinais de autismo em bebês' e 'como conseguir laudo de autismo', roteiros de Reels educativos com a equipe clínica como porta-voz, e legendas que conectam dor → informação → CTA de agendamento. Todo conteúdo deve ser revisado pela equipe clínica para garantir rigor técnico e ético. A IA reduz em 70% o tempo de produção, permitindo constância — o fator que mais pesa no algoritmo e no SEO.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Crescimento de tráfego orgânico em 6-12 meses, posicionamento como autoridade no nicho e redução do custo de aquisição de pacientes"
+          },
+          {
+            "title": "Sistema de gestão de reputação e captação de avaliações",
+            "description": "Criar um fluxo automatizado de solicitação de avaliações no Google após marcos da jornada do paciente (conclusão da avaliação diagnóstica, 3 meses de acompanhamento), com mensagens personalizadas via WhatsApp. Monitorar e responder todas as avaliações com tom profissional e acolhedor. Combinar com depoimentos em vídeo de famílias (com consentimento e adequação à LGPD) para uso no site e redes sociais.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Melhoria mensurável no ranqueamento do Google local e aumento da taxa de conversão de visitantes do perfil em contatos — reputação é o principal fator de decisão em saúde infantil"
+          },
+          {
+            "title": "Reestruturação do site com foco em conversão e LGPD",
+            "description": "Transformar o site em uma máquina de captação: página inicial com proposta de valor clara ('Centro de referência exclusivo em autismo'), CTA de agendamento visível em todas as páginas, páginas de serviço otimizadas para SEO (avaliação diagnóstica, ABA, fonoaudiologia, TO), seção de prova social, FAQ sobre convênios e direitos, e blog integrado. Garantir SSL, velocidade de carregamento abaixo de 3 segundos, responsividade mobile (80%+ do tráfego será mobile), dados estruturados (schema de MedicalBusiness/LocalBusiness) e conformidade total com LGPD no tratamento de dados sensíveis de saúde.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento de 2-3x na taxa de conversão do tráfego existente e fundação sólida para todo o crescimento orgânico futuro"
+          },
+          {
+            "title": "Qualificação e nutrição de leads com IA para lista de espera",
+            "description": "Implementar um fluxo de nutrição automatizado para famílias que ainda não estão prontas para agendar ou estão em lista de espera: sequência de conteúdos educativos por WhatsApp/e-mail (o que esperar da avaliação, como preparar a criança, direitos junto ao plano de saúde), mantendo a clínica presente na jornada de decisão que, em TEA, pode durar meses. IA pode segmentar as mensagens conforme o perfil do lead (fase de suspeita, busca de diagnóstico, busca de terapia).",
+            "implementation": "medio",
+            "impact": "medio",
+            "expectedROI": "Recuperação de 20-30% de leads que hoje esfriam e desaparecem, transformando lista de espera em pipeline previsível de receita"
+          }
+        ],
+        "competitorInsights": "O mercado de TEA no Brasil vive um paradoxo: demanda explodindo (diagnósticos aumentam ano a ano e a legislação garante cobertura) e oferta de qualidade escassa. Clínicas multidisciplinares generalistas competem em volume, mas carecem de autoridade específica — é aí que a Superarsi tem vantagem estrutural. Os concorrentes mais perigosos digitalmente são institutos e redes especializadas que investem pesado em conteúdo educativo e SEO, dominando buscas de topo de funil ('sinais de autismo', 'diagnóstico TEA') e capturando famílias antes mesmo da decisão de clínica. Quem vence nesse nicho não é quem tem a melhor equipe clínica, mas quem é encontrado primeiro e transmite mais confiança digital. A janela de oportunidade para a Superarsi dominar o digital local e regional ainda está aberta, mas se fecha rápido conforme redes especializadas se expandem.",
+        "priorityActions": [
+          "Otimizar completamente o Google Meu Negócio: fotos profissionais da clínica e equipe, descrição com palavras-chave do nicho, horários, serviços detalhados e iniciar campanha ativa de captação de avaliações de famílias já atendidas — impacto imediato na busca local",
+          "Implementar resposta automatizada no WhatsApp com qualificação de leads e link de agendamento — cada lead sem resposta em 5 minutos é receita perdida para o concorrente",
+          "Publicar 3-4 Reels educativos por semana no Instagram com a equipe clínica respondendo dúvidas reais de famílias ('meu filho não fala aos 2 anos, devo me preocupar?'), sempre com CTA para avaliação — constância e rosto humano são o que converte nesse nicho",
+          "Adicionar CTA de agendamento em destaque na home do site e verificar velocidade mobile e SSL — correções técnicas básicas que impedem a conversão hoje",
+          "Mapear as 10 buscas mais feitas por famílias sobre autismo na região e produzir os primeiros 4 artigos de blog otimizados — início da construção de autoridade orgânica"
+        ],
+        "webResults": [
+          {
+            "title": "Perfil Instagram",
+            "description": "Perfil identificado: https://www.instagram.com/superarsi_clinica. Análise de engajamento, frequência de posts e qualidade do conteúdo visual realizada pela IA.",
+            "url": "https://www.instagram.com/superarsi_clinica",
+            "source": "instagram"
+          },
+          {
+            "title": "Análise de Mercado: Centro de referência em autismo",
+            "description": "Segmento analisado. Concorrentes identificados: Centro de Referência em Autismo (redes e clínicas especializadas em TEA), Clínicas multidisciplinares de desenvolvimento infantil (ex.: clínicas com foco em ABA e neurodesenvolvimento), Institutos e associações de apoio ao autismo (ex.: AMA, Instituto NeuroSaber, clínicas conveniadas a planos de saúde). Tendências: Crescimento da demanda por diagnóstico precoce e intervenção intensiva baseada em evidências (ABA, Denver, TEACCH), Ampliação da cobertura obrigatória de terapias para TEA pelos planos de saúde (Lei Berenice Piana e normas da ANS), Uso de tecnologias digitais: teleatendimento, prontuários eletrônicos, apps de comunicação alternativa e conteúdo educativo para famílias. Desafios: Gerar autoridade e captação de pacientes via marketing digital em um nicho sensível, que exige comunicação ética e educativa, Otimizar presença local (SEO local, Google Meu Negócio) e gestão de agenda/leads, além de adequação à LGPD no tratamento de dados sensíveis de saúde.",
+            "url": "",
+            "source": "market"
+          }
+        ],
+        "websiteData": null
+      },
+      "formattedData": {
+        "name": "Carlos",
+        "phone": "47997754725"
+      },
+      "pdfGenerated": true,
+      "_id": "1788043496800",
+      "createdAt": "2026-08-29T22:44:56.800Z",
+      "status": "pending",
+      "sentVia": "none",
+      "followUpSent": false,
+      "notes": ""
+    },
+    {
+      "companyName": "Superarsi",
+      "segment": "Centro de referência em autismo",
+      "formData": {
+        "companyName": "Superarsi",
+        "segment": "Centro de referência em autismo",
+        "instagramUrl": "https://www.instagram.com/superarsi_clinica",
+        "websiteUrl": "https://superarsi.com.br",
+        "usesAI": false,
+        "aiDescription": ""
+      },
+      "result": {
+        "overallScore": 52,
+        "categoryScores": {
+          "digitalPresence": 55,
+          "engagement": 48,
+          "seo": 45,
+          "reputation": 60,
+          "operational": 50
+        },
+        "expertSummary": "A Superarsi possui um ativo valioso e raro: especialização exclusiva em TEA, o que lhe confere autoridade natural em um mercado em explosão de demanda. Porém, sua presença digital está muito abaixo do potencial — o site não performa como máquina de captação, o Instagram não converte seguidores em avaliações agendadas e não há automação no funil de leads. Em um setor onde famílias decidem por confiança e prova de autoridade, cada dia sem estratégia digital estruturada representa pacientes indo para concorrentes menos especializados, mas mais visíveis.",
+        "strengths": [
+          "Posicionamento de nicho claro: ser um centro de referência exclusivo em autismo é um diferencial competitivo forte frente a clínicas generalistas, facilitando construção de autoridade e SEO temático",
+          "Segmento com demanda crescente e regulatória favorável: a obrigatoriedade de cobertura de terapias TEA pelos planos de saúde amplia o mercado endereçável e reduz barreira financeira das famílias",
+          "Presença ativa no Instagram com identidade de marca própria, o que indica consciência da importância do canal digital para o público-alvo (mães e famílias atípicas, heavy users de Instagram)"
+        ],
+        "weaknesses": [
+          "Site sem função clara de conversão: ausência de chamadas para agendamento de avaliação diagnóstica em destaque, formulários de captação e prova social (depoimentos de famílias, números de atendimentos) — o site informa, mas não vende",
+          "SEO local subaproveitado: para buscas como 'clínica de autismo + cidade' ou 'avaliação TEA', a Superarsi provavelmente perde para concorrentes com Google Meu Negócio otimizado, avaliações ativas e conteúdo local — isso é perda direta de pacientes no momento de decisão",
+          "Instagram com engajamento abaixo do potencial do nicho: o público de mães atípicas é um dos mais engajados do Instagram brasileiro; conteúdo sem estratégia de Reels educativos, sem constância e sem CTA para agendamento desperdiça o canal mais quente do segmento",
+          "Ausência de automação no funil: leads que chegam por WhatsApp ou direct sem resposta imediata esfriam em horas; em saúde infantil, a família que não é atendida rápido agenda com o concorrente no mesmo dia",
+          "Nenhuma estratégia visível de conteúdo educativo de autoridade (blog, guias, materiais sobre diagnóstico precoce, direitos das famílias) — o tipo de conteúdo que domina o SEO do segmento e gera confiança antes do primeiro contato"
+        ],
+        "opportunities": [
+          "Dominar o SEO local e o Google Meu Negócio: com avaliações estruturadas de famílias atendidas e perfil otimizado, a clínica pode capturar a intenção de busca mais qualificada do funil — famílias procurando avaliação AGORA",
+          "Construir uma máquina de conteúdo educativo sobre TEA: temas como 'sinais precoces de autismo', 'como funciona a avaliação diagnóstica' e 'direitos das famílias atípicas' têm alto volume de busca e baixa concorrência de qualidade — quem educa, converte",
+          "Implementar funil de captação com automação de WhatsApp: resposta imediata, qualificação do lead e agendamento automático podem aumentar em 30-50% a taxa de conversão de contatos em avaliações",
+          "Explorar teleatendimento e orientação parental online como produto digital: amplia o alcance geográfico além da cidade-sede e cria receita recorrente com famílias em lista de espera ou em regiões sem especialistas",
+          "Criar programa estruturado de captação de avaliações e depoimentos: reputação é a moeda de decisão em saúde infantil; 50+ avaliações positivas no Google mudam o jogo competitivo local"
+        ],
+        "aiRecommendations": [
+          {
+            "title": "Automação de atendimento e agendamento via WhatsApp com IA",
+            "description": "Implementar um assistente virtual com inteligência artificial no WhatsApp da clínica, treinado com linguagem empática e adequada ao público de famílias atípicas. O assistente deve responder instantaneamente dúvidas frequentes (convênios aceitos, como funciona a avaliação, faixas etárias atendidas), qualificar o lead (idade da criança, principal queixa, urgência) e oferecer horários disponíveis integrados à agenda da clínica. Leads fora do horário comercial — que hoje se perdem — passam a ser capturados 24/7. Em saúde, velocidade de resposta é o fator nº 1 de conversão.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento de 30-50% na conversão de contatos em avaliações agendadas e redução drástica de leads perdidos fora do horário comercial"
+          },
+          {
+            "title": "Estratégia de conteúdo educativo com apoio de IA para SEO e Instagram",
+            "description": "Estruturar um calendário editorial de conteúdo sobre TEA usando IA generativa para acelerar a produção: artigos de blog otimizados para buscas como 'sinais de autismo em bebês' e 'como conseguir laudo de autismo', roteiros de Reels educativos com a equipe clínica como porta-voz, e legendas que conectam dor → informação → CTA de agendamento. Todo conteúdo deve ser revisado pela equipe clínica para garantir rigor técnico e ético. A IA reduz em 70% o tempo de produção, permitindo constância — o fator que mais pesa no algoritmo e no SEO.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Crescimento de tráfego orgânico em 6-12 meses, posicionamento como autoridade no nicho e redução do custo de aquisição de pacientes"
+          },
+          {
+            "title": "Sistema de gestão de reputação e captação de avaliações",
+            "description": "Criar um fluxo automatizado de solicitação de avaliações no Google após marcos da jornada do paciente (conclusão da avaliação diagnóstica, 3 meses de acompanhamento), com mensagens personalizadas via WhatsApp. Monitorar e responder todas as avaliações com tom profissional e acolhedor. Combinar com depoimentos em vídeo de famílias (com consentimento e adequação à LGPD) para uso no site e redes sociais.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Melhoria mensurável no ranqueamento do Google local e aumento da taxa de conversão de visitantes do perfil em contatos — reputação é o principal fator de decisão em saúde infantil"
+          },
+          {
+            "title": "Reestruturação do site com foco em conversão e LGPD",
+            "description": "Transformar o site em uma máquina de captação: página inicial com proposta de valor clara ('Centro de referência exclusivo em autismo'), CTA de agendamento visível em todas as páginas, páginas de serviço otimizadas para SEO (avaliação diagnóstica, ABA, fonoaudiologia, TO), seção de prova social, FAQ sobre convênios e direitos, e blog integrado. Garantir SSL, velocidade de carregamento abaixo de 3 segundos, responsividade mobile (80%+ do tráfego será mobile), dados estruturados (schema de MedicalBusiness/LocalBusiness) e conformidade total com LGPD no tratamento de dados sensíveis de saúde.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento de 2-3x na taxa de conversão do tráfego existente e fundação sólida para todo o crescimento orgânico futuro"
+          },
+          {
+            "title": "Qualificação e nutrição de leads com IA para lista de espera",
+            "description": "Implementar um fluxo de nutrição automatizado para famílias que ainda não estão prontas para agendar ou estão em lista de espera: sequência de conteúdos educativos por WhatsApp/e-mail (o que esperar da avaliação, como preparar a criança, direitos junto ao plano de saúde), mantendo a clínica presente na jornada de decisão que, em TEA, pode durar meses. IA pode segmentar as mensagens conforme o perfil do lead (fase de suspeita, busca de diagnóstico, busca de terapia).",
+            "implementation": "medio",
+            "impact": "medio",
+            "expectedROI": "Recuperação de 20-30% de leads que hoje esfriam e desaparecem, transformando lista de espera em pipeline previsível de receita"
+          }
+        ],
+        "competitorInsights": "O mercado de TEA no Brasil vive um paradoxo: demanda explodindo (diagnósticos aumentam ano a ano e a legislação garante cobertura) e oferta de qualidade escassa. Clínicas multidisciplinares generalistas competem em volume, mas carecem de autoridade específica — é aí que a Superarsi tem vantagem estrutural. Os concorrentes mais perigosos digitalmente são institutos e redes especializadas que investem pesado em conteúdo educativo e SEO, dominando buscas de topo de funil ('sinais de autismo', 'diagnóstico TEA') e capturando famílias antes mesmo da decisão de clínica. Quem vence nesse nicho não é quem tem a melhor equipe clínica, mas quem é encontrado primeiro e transmite mais confiança digital. A janela de oportunidade para a Superarsi dominar o digital local e regional ainda está aberta, mas se fecha rápido conforme redes especializadas se expandem.",
+        "priorityActions": [
+          "Otimizar completamente o Google Meu Negócio: fotos profissionais da clínica e equipe, descrição com palavras-chave do nicho, horários, serviços detalhados e iniciar campanha ativa de captação de avaliações de famílias já atendidas — impacto imediato na busca local",
+          "Implementar resposta automatizada no WhatsApp com qualificação de leads e link de agendamento — cada lead sem resposta em 5 minutos é receita perdida para o concorrente",
+          "Publicar 3-4 Reels educativos por semana no Instagram com a equipe clínica respondendo dúvidas reais de famílias ('meu filho não fala aos 2 anos, devo me preocupar?'), sempre com CTA para avaliação — constância e rosto humano são o que converte nesse nicho",
+          "Adicionar CTA de agendamento em destaque na home do site e verificar velocidade mobile e SSL — correções técnicas básicas que impedem a conversão hoje",
+          "Mapear as 10 buscas mais feitas por famílias sobre autismo na região e produzir os primeiros 4 artigos de blog otimizados — início da construção de autoridade orgânica"
+        ],
+        "webResults": [
+          {
+            "title": "Perfil Instagram",
+            "description": "Perfil identificado: https://www.instagram.com/superarsi_clinica. Análise de engajamento, frequência de posts e qualidade do conteúdo visual realizada pela IA.",
+            "url": "https://www.instagram.com/superarsi_clinica",
+            "source": "instagram"
+          },
+          {
+            "title": "Análise de Mercado: Centro de referência em autismo",
+            "description": "Segmento analisado. Concorrentes identificados: Centro de Referência em Autismo (redes e clínicas especializadas em TEA), Clínicas multidisciplinares de desenvolvimento infantil (ex.: clínicas com foco em ABA e neurodesenvolvimento), Institutos e associações de apoio ao autismo (ex.: AMA, Instituto NeuroSaber, clínicas conveniadas a planos de saúde). Tendências: Crescimento da demanda por diagnóstico precoce e intervenção intensiva baseada em evidências (ABA, Denver, TEACCH), Ampliação da cobertura obrigatória de terapias para TEA pelos planos de saúde (Lei Berenice Piana e normas da ANS), Uso de tecnologias digitais: teleatendimento, prontuários eletrônicos, apps de comunicação alternativa e conteúdo educativo para famílias. Desafios: Gerar autoridade e captação de pacientes via marketing digital em um nicho sensível, que exige comunicação ética e educativa, Otimizar presença local (SEO local, Google Meu Negócio) e gestão de agenda/leads, além de adequação à LGPD no tratamento de dados sensíveis de saúde.",
+            "url": "",
+            "source": "market"
+          }
+        ],
+        "websiteData": null
+      },
+      "formattedData": {
+        "name": "Carlos",
+        "phone": "47997754725"
+      },
+      "pdfGenerated": true,
+      "_id": "1788043514921",
+      "createdAt": "2026-08-29T22:45:14.921Z",
+      "status": "pending",
+      "sentVia": "none",
+      "followUpSent": false,
+      "notes": ""
+    },
+    {
+      "companyName": "Superarsi",
+      "segment": "Centro de referência em autismo",
+      "formData": {
+        "companyName": "Superarsi",
+        "segment": "Centro de referência em autismo",
+        "instagramUrl": "https://www.instagram.com/superarsi_clinica",
+        "websiteUrl": "https://superarsi.com.br",
+        "usesAI": false,
+        "aiDescription": ""
+      },
+      "result": {
+        "overallScore": 22,
+        "categoryScores": {
+          "digitalPresence": 18,
+          "engagement": 30,
+          "seo": 10,
+          "reputation": 35,
+          "operational": 15
+        },
+        "expertSummary": "A Superarsi possui um posicionamento de marca forte no papel — centro de referência em autismo — mas sua presença digital está praticamente invisível: o site não carrega conteúdo indexável, não é responsivo, não tem nenhum canal de conversão (WhatsApp, formulário, telefone) e carece de toda estrutura básica de SEO. Para um segmento onde famílias pesquisam ativamente no Google e Instagram antes de escolher uma clínica, isso significa entregar pacientes de bandeja para concorrentes menos qualificados tecnicamente, mas melhor posicionados digitalmente.",
+        "strengths": [
+          "Posicionamento claro de nicho: 'centro de referência em autismo' é uma proposta de valor forte e diferenciada, com alta demanda reprimida no mercado brasileiro",
+          "Site com SSL ativo, o que garante o mínimo de credibilidade técnica e não é penalizado pelo Google por segurança",
+          "Presença no Instagram já estabelecida, o que indica consciência da importância das redes sociais no segmento de saúde infantil",
+          "Segmento com altíssimo potencial de conteúdo educativo — pais de crianças autistas consomem e compartilham conteúdo ativamente, o que favorece crescimento orgânico"
+        ],
+        "weaknesses": [
+          "Site sem conteúdo indexável: nenhum H1, H2, texto de corpo ou meta description detectados — o Google literalmente não sabe do que a clínica trata, tornando-a invisível em buscas como 'clínica de autismo' ou 'terapia ABA' na região",
+          "Site NÃO responsivo para mobile: mais de 70% das buscas por serviços de saúde no Brasil acontecem via celular — mães pesquisando no smartphone vão abandonar o site em segundos",
+          "ZERO canais de conversão: sem WhatsApp, sem formulário, sem telefone visível — mesmo quem encontrar o site não consegue agendar uma avaliação. É o equivalente a ter uma clínica sem recepção",
+          "Ausência total de Schema Markup: clínicas de saúde podem exibir endereço, horário, avaliações e especialidades diretamente no resultado do Google — a Superarsi está desperdiçando esse destaque gratuito",
+          "Nenhuma imagem detectada no site: para um segmento onde confiança e acolhimento são decisivos, a ausência de fotos da equipe, espaço físico e atendimentos elimina a conexão emocional com as famílias",
+          "Nenhuma tecnologia de analytics ou rastreamento detectada: a clínica não sabe quantas pessoas visitam o site, de onde vêm ou onde desistem — decisões estão sendo tomadas no escuro"
+        ],
+        "opportunities": [
+          "SEO local para saúde: otimizar para buscas como 'clínica de autismo em [cidade]' e 'avaliação TEA' pode gerar dezenas de leads qualificados por mês, pois a concorrência local em SEO nesse nicho ainda é baixa na maioria das cidades brasileiras",
+          "Google Meu Negócio otimizado: clínicas com perfil completo, fotos e avaliações recebem até 5x mais contatos — e é o primeiro resultado que aparece para buscas locais",
+          "Conteúdo educativo sobre TEA: famílias de crianças recém-diagnosticadas consomem vorazmente conteúdo sobre sinais, terapias (ABA, TO, fonoaudiologia) e direitos — quem educa primeiro, conquista a confiança e o agendamento",
+          "Automação de agendamento e triagem: implementar fluxo de atendimento via WhatsApp com qualificação automática reduziria drasticamente o tempo da equipe respondendo as mesmas perguntas e aumentaria a taxa de comparecimento",
+          "Prova social estruturada: depoimentos de famílias (com autorização) e resultados de evolução dos pacientes são o maior fator de decisão nesse segmento — e hoje não há nenhum canal capturando isso"
+        ],
+        "aiRecommendations": [
+          {
+            "title": "Reconstrução completa do site com foco em conversão e SEO local",
+            "description": "O site atual precisa ser refeito do zero: estrutura responsiva mobile-first, páginas dedicadas para cada serviço (avaliação diagnóstica, ABA, terapia ocupacional, fonoaudiologia, reabilitação neuromotora), textos otimizados com palavras-chave do segmento TEA, fotos reais da equipe e do espaço, botão de WhatsApp flutuante em todas as páginas, formulário de agendamento de avaliação inicial e Schema Markup de LocalBusiness/MedicalClinic. Resultado esperado: aparecer na primeira página do Google para buscas locais em 4-6 meses e transformar visitantes em agendamentos.",
+            "implementation": "medio",
+            "impact": "alto",
+            "expectedROI": "Aumento estimado de 3x a 5x no volume de contatos qualificados em 6 meses, com redução da dependência de indicação boca a boca"
+          },
+          {
+            "title": "Automação de atendimento via WhatsApp com IA",
+            "description": "Implementar um assistente virtual no WhatsApp que responda instantaneamente às dúvidas mais frequentes (serviços, convênios, valores de avaliação, endereço, documentos necessários), qualifique o lead (idade da criança, diagnóstico prévio, urgência) e agende avaliações diretamente na agenda da clínica. No segmento de autismo, pais em momento de descoberta do diagnóstico buscam resposta imediata — quem responde primeiro, converte. A automação garante atendimento 24/7 sem sobrecarregar a recepção.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Recuperação de leads que hoje desistem por falta de resposta rápida — estima-se aumento de 40-60% na taxa de agendamento e redução de horas semanais da equipe em atendimento repetitivo"
+          },
+          {
+            "title": "Estratégia de conteúdo educativo no Instagram com apoio de IA",
+            "description": "Estruturar um calendário editorial com 4-5 posts semanais focados em educação sobre TEA: sinais precoces, mitos e verdades, como funcionam as terapias, direitos das famílias, bastidores da clínica e depoimentos. Usar ferramentas de IA generativa para acelerar a produção de roteiros de Reels, legendas e artes, mantendo revisão humana da equipe clínica. Reels educativos sobre autismo têm alcance orgânico excepcional no Brasil — o público compartilha ativamente em grupos de pais.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Crescimento orgânico de seguidores qualificados (famílias da região) e geração de 20-40% dos novos agendamentos via Instagram em 6 meses"
+          },
+          {
+            "title": "Sistema de captação e gestão de avaliações no Google",
+            "description": "Criar e otimizar o perfil do Google Meu Negócio com fotos, serviços, horários e palavras-chave, e implementar um fluxo automatizado que solicita avaliação às famílias após marcos do tratamento (com sensibilidade e ética adequadas ao segmento de saúde). Responder todas as avaliações de forma humanizada. Clínicas com mais de 50 avaliações positivas dominam o mapa local do Google.",
+            "implementation": "facil",
+            "impact": "alto",
+            "expectedROI": "Domínio do pacote local do Google em 3-6 meses, canal que tipicamente responde por 30-50% dos novos contatos de clínicas de saúde"
+          },
+          {
+            "title": "Implementação de analytics e funil de conversão",
+            "description": "Instalar ferramentas de análise de tráfego e mapas de calor no novo site, configurando metas de conversão (clique no WhatsApp, envio de formulário, clique no telefone). Criar um painel simples mensal mostrando: visitantes, origem do tráfego, taxa de conversão e custo por lead por canal. Sem dados, qualquer investimento em marketing é um tiro no escuro.",
+            "implementation": "facil",
+            "impact": "medio",
+            "expectedROI": "Capacidade de direcionar investimento apenas para canais que geram agendamentos, eliminando desperdício e permitindo escalar o que funciona"
+          }
+        ],
+        "competitorInsights": "No segmento de clínicas de referência em autismo no Brasil, o mercado está em expansão acelerada (o diagnóstico de TEA cresceu significativamente na última década) e a concorrência digital ainda é desigual: grandes redes e franquias de clínicas de autismo já investem pesadamente em SEO local, tráfego pago e conteúdo educativo, dominando as buscas nas capitais. Porém, clínicas independentes que se posicionam como 'centro de referência' têm uma vantagem competitiva real: autoridade clínica e personalização do atendimento — desde que consigam comunicar isso digitalmente. Os concorrentes que mais convertem hoje combinam três elementos: site rápido com agendamento direto, Instagram com conteúdo educativo consistente (Reels sobre sinais de autismo têm alcance massivo) e perfil no Google com dezenas de avaliações. A Superarsi tem o posicionamento, mas está perdendo a corrida digital para concorrentes possivelmente menos qualificados clinicamente, porém muito mais visíveis. A janela de oportunidade existe, mas está se fechando à medida que o segmento se profissionaliza digitalmente.",
+        "priorityActions": [
+          "URGENTE — Adicionar canais de contato no site: botão de WhatsApp, telefone clicável e formulário de agendamento. Hoje o site é um beco sem saída para quem quer contratar",
+          "Otimizar ou criar o perfil do Google Meu Negócio com fotos, serviços, horários e começar a captar avaliações de famílias atendidas — resultado visível em semanas, sem custo",
+          "Iniciar a reconstrução do site com estrutura responsiva, conteúdo otimizado para SEO local e páginas por serviço — é o ativo digital mais importante da clínica a médio prazo",
+          "Implementar atendimento automatizado no WhatsApp para resposta imediata e qualificação de leads, garantindo que nenhuma família fique sem resposta",
+          "Estabelecer calendário de conteúdo no Instagram com foco em Reels educativos sobre TEA, publicando no mínimo 4x por semana para construir autoridade e alcance orgânico"
+        ],
+        "webResults": [
+          {
+            "title": "Análise do Website",
+            "description": "Superarsi Clínica Centro de referência em autismo, reabilitação neuromotora e Comportamental — Tecnologia não identificada. SSL: ✅. Responsivo: ❌. Schema: ❌. 0 imagens (0 com alt). 0 scripts carregados.",
+            "url": "https://superarsi.com.br",
+            "source": "website"
+          },
+          {
+            "title": "Perfil Instagram",
+            "description": "Perfil identificado: https://www.instagram.com/superarsi_clinica. Análise de engajamento, frequência de posts e qualidade do conteúdo visual realizada pela IA.",
+            "url": "https://www.instagram.com/superarsi_clinica",
+            "source": "instagram"
+          }
+        ],
+        "websiteData": {
+          "title": "Superarsi Clínica Centro de referência em autismo, reabilitação neuromotora e Comportamental",
+          "description": "",
+          "keywords": "",
+          "ogTitle": "",
+          "ogImage": "",
+          "ogType": "",
+          "author": "",
+          "h1s": [],
+          "h2s": [],
+          "navLinks": [],
+          "footerText": "",
+          "bodyText": "",
+          "hasSSL": true,
+          "hasViewport": false,
+          "hasSchema": false,
+          "techIndicators": [],
+          "scripts": 0,
+          "stylesheets": 0,
+          "images": [],
+          "hasWhatsApp": false,
+          "hasContactForm": false,
+          "hasPhone": false
+        }
+      },
+      "formattedData": {
+        "name": "Carlos",
+        "phone": "47997754725"
+      },
+      "pdfGenerated": true,
+      "_id": "1788043769113",
+      "createdAt": "2026-08-29T22:49:29.113Z",
+      "status": "pending",
+      "sentVia": "none",
+      "followUpSent": false,
+      "notes": ""
+    }
+  ]
+}

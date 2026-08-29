@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin — Agência Global</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #B4BAE8;
+      --surface: #FFFFFF;
+      --navy: #3D3568;
+      --text-sec: #8B87A6;
+      --input-bg: #F1F0F5;
+      --bg-dark: #A5ACDD;
+      --white: #FFFFFF;
+      --green: #2D5A3D;
+      --red: #C0392B;
+      --orange: #E67E22;
+      --blue: #2980B9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--navy);
+      min-height: 100vh;
+    }
+    .hidden { display: none !important; }
+
+    /* AUTH */
+    .auth-container {
+      max-width: 380px;
+      margin: 60px auto;
+      padding: 32px;
+      background: var(--surface);
+      border-radius: 28px;
+      box-shadow: 0 8px 32px rgba(61,53,104,.08);
+      text-align: center;
+    }
+    .auth-container h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .auth-container p { font-size: 12px; color: var(--text-sec); margin-bottom: 24px; }
+    .auth-field { margin-bottom: 14px; text-align: left; }
+    .auth-field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+    .auth-field input {
+      width: 100%;
+      padding: 12px 18px;
+      background: var(--input-bg);
+      border: 2px solid var(--bg-dark);
+      border-radius: 100px;
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      color: var(--navy);
+      outline: none;
+      transition: all .2s ease;
+    }
+    .auth-field input:focus { border-color: var(--navy); }
+
+    /* NAVBAR */
+    .admin-nav {
+      background: var(--navy);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-nav .brand { color: var(--white); font-size: 14px; font-weight: 700; }
+    .admin-nav .brand span { color: var(--bg); font-weight: 400; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--white);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-family: 'Poppins', sans-serif;
+    }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,.15); }
+    .nav-link.logout { background: rgba(255,255,255,.1); }
+
+    /* MAIN */
+    .admin-main { max-width: 960px; margin: 0 auto; padding: 24px; }
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 22px; font-weight: 700; }
+    .page-header p { font-size: 13px; color: var(--text-sec); }
+
+    /* STATS */
+    .stats-row { display: flex; gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(61,53,104,.06);
+    }
+    .stat-card .number { font-size: 28px; font-weight: 800; }
+    .stat-card .label { font-size: 11px; color: var(--text-sec); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .stat-card.green .number { color: var(--green); }
+    .stat-card.orange .number { color: var(--orange); }
+    .stat-card.blue .number { color: var(--blue); }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(61,53,104,.06);
+      margin-bottom: 16px;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .card-title { font-size: 14px; font-weight: 700; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; font-weight: 600; color: var(--text-sec); text-align: left; text-transform: uppercase; letter-spacing: .04em; padding: 10px 12px; border-bottom: 2px solid var(--input-bg); }
+    td { font-size: 13px; padding: 12px; border-bottom: 1px solid var(--input-bg); vertical-align: middle; }
+    tr:hover td { background: rgba(180,186,232,.08); }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-pending { background: #FFF3CD; color: #856404; }
+    .badge-sent { background: #D4EDDA; color: var(--green); }
+    .badge-viewed { background: #D6EAF8; color: var(--blue); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      border: none;
+      transition: all .2s ease;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--navy); color: var(--white); }
+    .btn-primary:hover { box-shadow: 0 4px 12px rgba(61,53,104,.2); }
+    .btn-sm { padding: 6px 12px; font-size: 11px; }
+    .btn-ghost { background: transparent; color: var(--navy); border: 2px solid var(--navy); }
+    .btn-ghost:hover { background: var(--navy); color: var(--white); }
+    .btn-danger { background: var(--red); color: var(--white); }
+    .btn-success { background: var(--green); color: var(--white); }
+    .btn-warning { background: var(--orange); color: var(--white); }
+    .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* SCORE BAR */
+    .score-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+    .score-bar-track { flex: 1; height: 6px; background: var(--input-bg); border-radius: 100px; overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: 100px; transition: width .5s ease; }
+    .score-bar-label { font-size: 11px; font-weight: 600; min-width: 32px; text-align: right; }
+    .score-name { font-size: 12px; font-weight: 600; min-width: 100px; }
+
+    /* DETAIL */
+    .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .detail-header h2 { font-size: 18px; font-weight: 700; }
+    .detail-header p { font-size: 12px; color: var(--text-sec); }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .info-item { background: var(--input-bg); border-radius: 12px; padding: 12px; }
+    .info-item .label { font-size: 10px; color: var(--text-sec); text-transform: uppercase; font-weight: 600; letter-spacing: .04em; }
+    .info-item .value { font-size: 13px; font-weight: 600; margin-top: 2px; word-break: break-all; }
+
+    /* ACTIONS LIST */
+    .action-item {
+      background: var(--input-bg);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .action-item .title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .action-item .desc { font-size: 12px; color: var(--text-sec); line-height: 1.5; }
+    .action-meta { display: flex; gap: 8px; margin-top: 8px; }
+
+    /* TEXTAREA */
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--input-bg);
+      border: 2px solid var(--bg-dark);
+      border-radius: 16px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      color: var(--navy);
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      transition: all .2s ease;
+    }
+    textarea:focus { border-color: var(--navy); }
+
+    /* TEMPLATE PREVIEW */
+    .template-preview {
+      background: var(--input-bg);
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    /* BACK BUTTON */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sec);
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 16px;
+      font-family: 'Poppins', sans-serif;
+    }
+    .back-btn:hover { color: var(--navy); }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--navy);
+      color: var(--white);
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(61,53,104,.25);
+      z-index: 1000;
+      animation: slideUp .3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(61,53,104,.4);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal-card {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 16px 48px rgba(61,53,104,.2);
+    }
+    .modal-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .modal-card p { font-size: 13px; color: var(--text-sec); margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  </style>
+</head>
+<body>
+
+  <!-- ========== AUTH SCREEN ========== -->
+  <div id="authScreen" class="auth-container">
+    <div style="margin-bottom:20px">
+      <div style="width:48px;height:48px;border-radius:14px;background:var(--navy);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h2>Painel Administrativo</h2>
+      <p>Acesse para gerenciar diagnósticos e templates</p>
+    </div>
+    <div class="auth-field">
+      <label>Usuário</label>
+      <input type="text" id="authUser" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="auth-field">
+      <label>Senha</label>
+      <input type="password" id="authPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="authError" class="hidden" style="color:var(--red);font-size:12px;margin-bottom:12px">Credenciais inválidas</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" id="btnLogin">Entrar</button>
+  </div>
+
+  <!-- ========== ADMIN APP ========== -->
+  <div id="adminApp" class="hidden">
+    <!-- NAVBAR -->
+    <nav class="admin-nav">
+      <div class="brand">Agência Global <span>— Painel Admin</span></div>
+      <div class="nav-links">
+        <button class="nav-link active" id="navDiagnostics">Diagnósticos</button>
+        <button class="nav-link" id="navTemplates">Templates</button>
+        <button class="nav-link logout" id="btnLogout">Sair</button>
+      </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="admin-main">
+      <!-- Dashboard -->
+      <div id="viewDashboard">
+        <div class="page-header">
+          <h1>Diagnósticos</h1>
+          <p>Gerencie os diagnósticos gerados e envie follow-ups</p>
+        </div>
+        <div class="stats-row" id="statsRow"></div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Últimos Diagnósticos</span>
+            <button class="btn btn-sm btn-ghost" id="btnRefresh">Atualizar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>Segmento</th>
+                  <th>Score</th>
+                  <th>Status</th>
+                  <th>Data</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="diagTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnóstico Detail -->
+      <div id="viewDetail" class="hidden"></div>
+
+      <!-- Templates -->
+      <div id="viewTemplates" class="hidden">
+        <div class="page-header">
+          <h1>Templates de Follow-up</h1>
+          <p>Templates automáticos baseados nas ações prioritárias do diagnóstico</p>
+        </div>
+        <div id="templatesList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== STATE ==========
+    let state = {
+      loggedIn: localStorage.getItem('admin_logged') === 'true',
+      currentView: 'dashboard',
+      diagnostics: [],
+      templates: [],
+      selectedDiag: null
+    };
+
+    const authScreen = document.getElementById('authScreen');
+    const adminApp = document.getElementById('adminApp');
+
+    // ========== AUTH ==========
+    if (state.loggedIn) showAdmin();
+    else showAuth();
+
+    function showAuth() {
+      authScreen.classList.remove('hidden');
+      adminApp.classList.add('hidden');
+    }
+
+    function showAdmin() {
+      authScreen.classList.add('hidden');
+      adminApp.classList.remove('hidden');
+      loadData();
+    }
+
+    document.getElementById('btnLogin').addEventListener('click', () => {
+      const user = document.getElementById('authUser').value.trim();
+      const pass = document.getElementById('authPass').value;
+      if (user === 'admin' && pass === 'agencia2024') {
+        state.loggedIn = true;
+        localStorage.setItem('admin_logged', 'true');
+        document.getElementById('authError').classList.add('hidden');
+        showAdmin();
+      } else {
+        document.getElementById('authError').classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('authPass').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btnLogin').click();
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      state.loggedIn = false;
+      localStorage.removeItem('admin_logged');
+      showAuth();
+    });
+
+    // ========== NAV ==========
+    document.getElementById('navDiagnostics').addEventListener('click', () => {
+      state.currentView = 'dashboard';
+      updateNav();
+      renderView();
+    });
+
+    document.getElementById('navTemplates').addEventListener('click', () => {
+      state.currentView = 'templates';
+      updateNav();
+      renderView();
+    });
+
+    document.getElementById('btnRefresh').addEventListener('click', loadData);
+
+    function updateNav() {
+      document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+      if (state.currentView === 'dashboard') document.getElementById('navDiagnostics').classList.add('active');
+      else document.getElementById('navTemplates').classList.add('active');
+    }
+
+    // ========== LOAD DATA ==========
+    async function loadData() {
+      try {
+        const [diagResp, templResp] = await Promise.all([
+          fetch('/api/diagnostics'),
+          fetch('/api/templates')
+        ]);
+        const diagData = await diagResp.json();
+        const templData = await templResp.json();
+        state.diagnostics = diagData.diagnostics || [];
+        state.templates = templData.templates || [];
+        renderView();
+      } catch (e) {
+        console.error('Load error:', e);
+      }
+    }
+
+    // ========== RENDER ==========
+    function renderView() {
+      document.getElementById('viewDashboard').classList.toggle('hidden', state.currentView !== 'dashboard');
+      document.getElementById('viewDetail').classList.toggle('hidden', state.currentView !== 'detail');
+      document.getElementById('viewTemplates').classList.toggle('hidden', state.currentView !== 'templates');
+
+      if (state.currentView === 'dashboard') renderDashboard();
+      else if (state.currentView === 'detail') renderDetail();
+      else if (state.currentView === 'templates') renderTemplates();
+    }
+
+    // ========== DASHBOARD ==========
+    function renderDashboard() {
+      const all = state.diagnostics;
+      const pending = all.filter(d => d.status === 'pending').length;
+      const sent = all.filter(d => d.status === 'sent').length;
+
+      document.getElementById('statsRow').innerHTML = `
+        <div class="stat-card blue"><div class="number">${all.length}</div><div class="label">Total</div></div>
+        <div class="stat-card orange"><div class="number">${pending}</div><div class="label">Pendentes</div></div>
+        <div class="stat-card green"><div class="number">${sent}</div><div class="label">Enviados</div></div>
+      `;
+
+      const tbody = document.getElementById('diagTableBody');
+      if (all.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-sec);padding:32px">Nenhum diagnóstico encontrado</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(d => {
+        const score = d.result?.overallScore || 0;
+        const date = new Date(d.createdAt).toLocaleDateString('pt-BR');
+        const statusClass = d.status === 'sent' ? 'badge-sent' : d.status === 'viewed' ? 'badge-viewed' : 'badge-pending';
+        const statusLabel = d.status === 'sent' ? 'Enviado' : d.status === 'viewed' ? 'Visualizado' : 'Pendente';
+        return `
+          <tr>
+            <td><strong>${d.companyName}</strong><br><span style="font-size:11px;color:var(--text-sec)">${d.formattedData?.name || '—'}</span></td>
+            <td>${d.segment}</td>
+            <td><span style="font-size:18px;font-weight:800;color:var(--navy)">${score}</span><span style="font-size:11px;color:var(--text-sec)">/100</span></td>
+            <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+            <td style="font-size:12px;color:var(--text-sec)">${date}</td>
+            <td>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-primary" onclick="viewDetail('${d._id}')">Ver</button>
+                ${d.status === 'pending' ? `<button class="btn btn-sm btn-success" onclick="markSent('${d._id}')">Enviado</button>` : ''}
+                <button class="btn btn-sm btn-danger" onclick="confirmDelete('${d._id}', '${d.companyName}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ========== DETAIL ==========
+    function viewDetail(id) {
+      state.selectedDiag = state.diagnostics.find(d => d._id === id);
+      state.currentView = 'detail';
+      updateNav();
+      renderView();
+    }
+
+    function renderDetail() {
+      const d = state.selectedDiag;
+      if (!d) return;
+
+      const r = d.result || {};
+      const score = r.overallScore || 0;
+      const cats = r.categoryScores || {};
+      const actions = r.priorityActions || [];
+      const strengths = r.strengths || [];
+      const weaknesses = r.weaknesses || [];
+
+      // Encontrar template matching
+      const matchTemplate = findMatchingTemplate(actions);
+
+      document.getElementById('viewDetail').innerHTML = `
+        <button class="back-btn" onclick="goBack()">← Voltar</button>
+
+        <div class="detail-header">
+          <div>
+            <h2>${d.companyName}</h2>
+            <p>${d.segment} — Lead: ${d.formattedData?.name || '—'} — Tel: ${d.formattedData?.phone || '—'}</p>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:32px;font-weight:800;color:var(--navy)">${score}<span style="font-size:14px;color:var(--text-sec)">/100</span></div>
+            <span class="badge ${d.status === 'sent' ? 'badge-sent' : d.status === 'viewed' ? 'badge-viewed' : 'badge-pending'}">${d.status === 'sent' ? 'Enviado' : d.status === 'viewed' ? 'Visualizado' : 'Pendente'}</span>
+          </div>
+        </div>
+
+        <!-- Scores -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Scores por Categoria</span></div>
+          ${renderScoreBar('Presença Digital', cats.digitalPresence)}
+          ${renderScoreBar('Engajamento', cats.engagement)}
+          ${renderScoreBar('SEO & Site', cats.seo)}
+          ${renderScoreBar('Reputação', cats.reputation)}
+          ${renderScoreBar('Operacional', cats.operational)}
+        </div>
+
+        <!-- Info -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Dados do Lead</span></div>
+          <div class="info-grid">
+            <div class="info-item"><div class="label">Empresa</div><div class="value">${d.companyName}</div></div>
+            <div class="info-item"><div class="label">Segmento</div><div class="value">${d.segment}</div></div>
+            <div class="info-item"><div class="label">Nome</div><div class="value">${d.formattedData?.name || '—'}</div></div>
+            <div class="info-item"><div class="label">Telefone</div><div class="value">${d.formattedData?.phone || '—'}</div></div>
+            <div class="info-item"><div class="label">Instagram</div><div class="value" style="font-size:11px">${d.formData?.instagramUrl || '—'}</div></div>
+            <div class="info-item"><div class="label">Website</div><div class="value" style="font-size:11px">${d.formData?.websiteUrl || '—'}</div></div>
+          </div>
+        </div>
+
+        <!-- Pontos Fortes / Fracos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-header"><span class="card-title" style="color:var(--green)">Pontos Fortes</span></div>
+            ${strengths.length ? strengths.map(s => `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--input-bg)">✓ ${s}</div>`).join('') : '<p style="font-size:12px;color:var(--text-sec)">Nenhum identificado</p>'}
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title" style="color:var(--red)">Problemas</span></div>
+            ${weaknesses.length ? weaknesses.map(w => `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--input-bg)">✗ ${w}</div>`).join('') : '<p style="font-size:12px;color:var(--text-sec)">Nenhum identificado</p>'}
+          </div>
+        </div>
+
+        <!-- Ações Prioritárias -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Ações Prioritárias (30 dias)</span></div>
+          ${actions.length ? actions.map((a, i) => `
+            <div class="action-item">
+              <div class="title">${i+1}. ${a.title}</div>
+              <div class="desc">${a.description}</div>
+              <div class="action-meta">
+                <span class="badge badge-${a.impact === 'alto' ? 'pending' : a.impact === 'medio' ? 'viewed' : 'sent'}">${a.impact} impacto</span>
+                <span class="badge" style="background:var(--input-bg);color:var(--navy)">${a.implementation}</span>
+                ${a.expectedROI ? `<span class="badge" style="background:#D4EDDA;color:var(--green)">ROI: ${a.expectedROI}</span>` : ''}
+              </div>
+            </div>
+          `).join('') : '<p style="font-size:12px;color:var(--text-sec)">Nenhuma ação identificada</p>'}
+        </div>
+
+        <!-- Template Sugerido -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Template de Follow-up Sugerido</span>
+          </div>
+          ${matchTemplate ? `
+            <div style="margin-bottom:12px">
+              <span class="badge badge-viewed">${matchTemplate.name}</span>
+              <span style="font-size:11px;color:var(--text-sec);margin-left:8px">Baseado em: "${matchTemplate.triggerKeyword}"</span>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">ASSUNTO DO E-MAIL</label>
+              <div class="template-preview" style="padding:10px 14px;font-weight:600">${fillTemplate(matchTemplate.emailSubject, d, actions[0])}</div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">CORPO DO E-MAIL</label>
+              <div class="template-preview">${fillTemplate(matchTemplate.emailBody, d, actions[0])}</div>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">WHATSAPP</label>
+              <div class="template-preview">${fillTemplate(matchTemplate.whatsappTemplate, d, actions[0])}</div>
+            </div>
+            <div class="btn-group" style="margin-top:16px">
+              <button class="btn btn-primary" onclick="copyEmail()">Copiar E-mail</button>
+              <button class="btn btn-success" onclick="copyWhatsApp()">Copiar WhatsApp</button>
+              <button class="btn btn-ghost" onclick="markSent('${d._id}')">Marcar como Enviado</button>
+            </div>
+          ` : '<p style="font-size:12px;color:var(--text-sec)">Nenhum template encontrado para estas ações</p>'}
+        </div>
+
+        <!-- Notas -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Notas Internas</span></div>
+          <textarea id="diagNotes" placeholder="Adicione notas sobre este lead...">${d.notes || ''}</textarea>
+          <button class="btn btn-sm btn-ghost" style="margin-top:8px" onclick="saveNotes('${d._id}')">Salvar Notas</button>
+        </div>
+      `;
+    }
+
+    function renderScoreBar(name, value) {
+      const color = value >= 70 ? 'var(--green)' : value >= 50 ? 'var(--orange)' : 'var(--red)';
+      return `
+        <div class="score-bar">
+          <span class="score-name">${name}</span>
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:${value}%;background:${color}"></div>
+          </div>
+          <span class="score-bar-label">${value}%</span>
+        </div>
+      `;
+    }
+
+    // ========== TEMPLATES ==========
+    function renderTemplates() {
+      const list = document.getElementById('templatesList');
+      if (state.templates.length === 0) {
+        list.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-sec)">Nenhum template encontrado</div>';
+        return;
+      }
+
+      list.innerHTML = state.templates.map(t => `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="card-title">${t.name}</span>
+              <span class="badge badge-${t.priority === 'high' ? 'pending' : t.priority === 'medium' ? 'viewed' : 'sent'}" style="margin-left:8px">${t.priority}</span>
+            </div>
+            <span style="font-size:11px;color:var(--text-sec)">Usado ${t.usedCount || 0}x</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-sec);margin-bottom:10px">Trigger: "${t.triggerKeyword}"</div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-ghost" onclick="previewTemplate('${t._id}')">Visualizar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function previewTemplate(id) {
+      const t = state.templates.find(tmpl => tmpl._id === id);
+      if (!t) return;
+      alert(`ASSUNTO:\n${t.emailSubject}\n\n---\n\nWHATSAPP:\n${t.whatsappTemplate}`);
+    }
+
+    // ========== TEMPLATE MATCHING ==========
+    function findMatchingTemplate(actions) {
+      if (!actions || !actions.length) return state.templates[0] || null;
+
+      for (const tmpl of state.templates) {
+        for (const action of actions) {
+          if (
+            action.title?.toLowerCase().includes(tmpl.triggerKeyword?.toLowerCase()) ||
+            action.description?.toLowerCase().includes(tmpl.triggerKeyword?.toLowerCase())
+          ) {
+            return tmpl;
+          }
+        }
+      }
+      return state.templates[state.templates.length - 1] || null;
+    }
+
+    function fillTemplate(text, diag, action) {
+      if (!text) return '';
+      const r = diag.result || {};
+      return text
+        .replace(/\{companyName\}/g, diag.companyName || '')
+        .replace(/\{name\}/g, diag.formattedData?.name || '')
+        .replace(/\{score\}/g, r.overallScore || 0)
+        .replace(/\{totalActions\}/g, (r.priorityActions || []).length)
+        .replace(/\{actionTitle\}/g, action?.title || '')
+        .replace(/\{actionROI\}/g, action?.expectedROI || '')
+        .replace(/\{actionImplementation\}/g, action?.implementation || '')
+        .replace(/\{segment\}/g, diag.segment || '');
+    }
+
+    // ========== ACTIONS ==========
+    async function markSent(id) {
+      try {
+        await fetch(`/api/diagnostics/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'sent', sentVia: 'manual', sentAt: new Date().toISOString() })
+        });
+        showToast('Marcado como enviado!');
+        await loadData();
+        if (state.currentView === 'detail') {
+          state.selectedDiag = state.diagnostics.find(d => d._id === id);
+          renderView();
+        }
+      } catch (e) {
+        showToast('Erro ao atualizar');
+      }
+    }
+
+    async function saveNotes(id) {
+      const notes = document.getElementById('diagNotes').value;
+      try {
+        await fetch(`/api/diagnostics/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notes })
+        });
+        showToast('Notas salvas!');
+      } catch (e) {
+        showToast('Erro ao salvar');
+      }
+    }
+
+    function goBack() {
+      state.currentView = 'dashboard';
+      state.selectedDiag = null;
+      updateNav();
+      renderView();
+    }
+
+    function copyEmail() {
+      const el = document.querySelector('#viewDetail .template-preview');
+      if (el) {
+        navigator.clipboard.writeText(el.textContent).then(() => showToast('E-mail copiado!'));
+      }
+    }
+
+    function copyWhatsApp() {
+      const previews = document.querySelectorAll('#viewDetail .template-preview');
+      const wa = previews[previews.length - 1];
+      if (wa) {
+        navigator.clipboard.writeText(wa.textContent).then(() => showToast('WhatsApp copiado!'));
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ========== DELETE ==========
+    function confirmDelete(id, companyName) {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-card">
+          <h3>Excluir Diagnóstico</h3>
+          <p>Tem certeza que deseja excluir o diagnóstico de <strong>${companyName}</strong>?<br>Esta ação não pode ser desfeita.</p>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmDelete">Excluir</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+      document.getElementById('btnConfirmDelete').addEventListener('click', async () => {
+        try {
+          const resp = await fetch(`/api/diagnostics/${id}`, { method: 'DELETE' });
+          if (resp.ok) {
+            showToast('Diagnóstico excluído!');
+            overlay.remove();
+            await loadData();
+            if (state.currentView === 'detail') goBack();
+          } else {
+            showToast('Erro ao excluir');
+          }
+        } catch (e) {
+          showToast('Erro ao excluir');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
