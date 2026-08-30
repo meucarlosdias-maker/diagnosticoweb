@@ -1,4 +1,4 @@
-const { redis } = require('../_lib');
+const { getRedis } = require('../_lib');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,6 +11,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
+      const redis = getRedis();
       const templates = (await redis.get('templates')) || [];
       const idx = templates.findIndex(t => t._id === id);
       if (idx === -1) return res.status(404).json({ error: 'Template não encontrado' });

@@ -1,4 +1,4 @@
-const { redis } = require('./_lib');
+const { getRedis } = require('./_lib');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,10 +9,11 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
+      const redis = getRedis();
       const templates = (await redis.get('templates')) || [];
       return res.status(200).json({ templates });
     } catch (e) {
-      return res.status(200).json({ templates: [] });
+      return res.status(200).json({ templates: [], error: e.message });
     }
   }
 

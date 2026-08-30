@@ -1,4 +1,4 @@
-const { redis } = require('./_lib');
+const { getRedis } = require('./_lib');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,16 +9,18 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
+      const redis = getRedis();
       const diagnostics = (await redis.get('diagnostics')) || [];
       return res.status(200).json({ diagnostics });
     } catch (e) {
       console.error('[DIAG] GET error:', e.message);
-      return res.status(200).json({ diagnostics: [] });
+      return res.status(200).json({ diagnostics: [], error: e.message });
     }
   }
 
   if (req.method === 'POST') {
     try {
+      const redis = getRedis();
       const diagnostics = (await redis.get('diagnostics')) || [];
       const novo = {
         ...req.body,

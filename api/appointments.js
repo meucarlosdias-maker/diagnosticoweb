@@ -1,4 +1,4 @@
-const { redis } = require('./_lib');
+const { getRedis } = require('./_lib');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,15 +9,18 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
+      const redis = getRedis();
       const appointments = (await redis.get('appointments')) || [];
       return res.status(200).json({ appointments });
     } catch (e) {
-      return res.status(200).json({ appointments: [] });
+      console.error('[APPT] GET error:', e.message);
+      return res.status(200).json({ appointments: [], error: e.message });
     }
   }
 
   if (req.method === 'POST') {
     try {
+      const redis = getRedis();
       const appointments = (await redis.get('appointments')) || [];
       const novo = {
         ...req.body,
@@ -30,6 +33,7 @@ module.exports = async function handler(req, res) {
       console.log('[APPT] Saved:', novo._id, novo.companyName);
       return res.status(200).json({ success: true, appointment: novo });
     } catch (e) {
+      console.error('[APPT] POST error:', e.message);
       return res.status(500).json({ error: e.message });
     }
   }

@@ -1,17 +1,7 @@
 {
-  "outputDirectory": ".",
   "installCommand": "npm install",
-  "buildCommand": "echo 'Static site - no build needed'",
-  "functions": {
-    "api/chat.js": { "maxDuration": 300 },
-    "api/prospect.js": { "maxDuration": 300 },
-    "api/diagnostics.js": { "maxDuration": 10 },
-    "api/diagnostics/[id].js": { "maxDuration": 10 },
-    "api/appointments.js": { "maxDuration": 10 },
-    "api/appointments/[id].js": { "maxDuration": 10 },
-    "api/templates.js": { "maxDuration": 10 },
-    "api/templates/[id].js": { "maxDuration": 10 }
-  },
+  "outputDirectory": ".",
+  "framework": null,
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" }
   ]

@@ -1,4 +1,4 @@
-const { redis } = require('../_lib');
+const { getRedis } = require('../_lib');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,6 +11,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
+      const redis = getRedis();
       const appointments = (await redis.get('appointments')) || [];
       const idx = appointments.findIndex(a => a._id === id);
       if (idx === -1) return res.status(404).json({ error: 'Agendamento não encontrado' });
@@ -24,6 +25,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'DELETE') {
     try {
+      const redis = getRedis();
       let appointments = (await redis.get('appointments')) || [];
       appointments = appointments.filter(a => a._id !== id);
       await redis.set('appointments', appointments);

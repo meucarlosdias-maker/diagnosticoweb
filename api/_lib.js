@@ -1,8 +1,15 @@
-const { Redis } = require('@upstash/redis');
+let redis = null;
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || 'https://placeholder.upstash.io',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || 'placeholder',
-});
+function getRedis() {
+  if (redis) return redis;
+  const { Redis } = require('@upstash/redis');
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token || url === 'placeholder') {
+    throw new Error('UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN não configurados');
+  }
+  redis = new Redis({ url, token });
+  return redis;
+}
 
-module.exports = { redis };
+module.exports = { getRedis };
