@@ -235,6 +235,64 @@
     .btn-ghost:hover { background: var(--navy); color: var(--white); }
     .btn-full { width: 100%; max-width: 280px; }
 
+    /* ===== SCHEDULE BUTTON ===== */
+    .btn-schedule {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 32px;
+      border-radius: 16px;
+      border: none;
+      background: #2D5A3D;
+      color: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      width: 100%;
+      max-width: 320px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+    .btn-schedule:hover { background: #1E3D2B; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(45,90,61,.3); }
+    .btn-schedule:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ===== DAY/HOUR PICKER ===== */
+    .day-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 2px solid var(--bg-dark);
+      background: var(--white);
+      cursor: pointer;
+      transition: all .2s;
+      min-width: 56px;
+      font-family: 'Poppins', sans-serif;
+    }
+    .day-btn:hover { border-color: var(--navy); }
+    .day-btn.selected { border-color: #2D5A3D; background: #2D5A3D; }
+    .day-btn.selected span { color: var(--white) !important; }
+
+    .hour-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 2px solid var(--bg-dark);
+      background: var(--white);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    .hour-btn:hover { border-color: var(--navy); }
+    .hour-btn.selected { border-color: #2D5A3D; background: #2D5A3D; color: var(--white); }
+
     /* ===== AI TOGGLE ===== */
     .ai-toggle {
       display: flex; gap: 12px;
@@ -454,6 +512,7 @@
       showPopup: false,
       showResults: false,
       showThankYou: false,
+      showScheduler: false,
       isAnalyzing: false,
       leadName: '',
       leadPhone: '',
@@ -485,6 +544,7 @@
     // ========== RENDER ==========
     function render() {
       if (state.showThankYou) return renderThankYou();
+      if (state.showScheduler) return renderScheduler();
       if (state.showPopup) return renderPopup();
       if (state.showResults && state.result) return renderResults();
       return renderQuiz();
@@ -725,13 +785,15 @@
             <p style="font-size:13px;color:var(--navy);line-height:1.6">${r.whereWeCanHelp}</p>
           </div>` : ''}
 
-          <div style="text-align:center;padding:20px 0">
+          <div style="text-align:center;padding:20px 0;display:flex;flex-direction:column;gap:10px;align-items:center">
+            <button class="btn-schedule" id="btnSchedule">QUERO AJUDA COM O DIGITAL DA MINHA EMPRESA</button>
             <button class="btn-primary btn-full" id="btnDownload">${icons.download} Baixar Relatório Completo (PDF)</button>
-            <p style="font-size:11px;color:var(--text-sec);margin-top:10px">Preencha seu nome e telefone para gerar o PDF</p>
+            <p style="font-size:11px;color:var(--text-sec);margin-top:4px">Preencha seu nome e telefone para gerar o PDF</p>
           </div>
           <p style="text-align:center;font-size:11px;color:var(--text-sec);margin-top:16px">Auditoria gerada por IA — BACY Agência</p>
         </div>
       `;
+      document.getElementById('btnSchedule').addEventListener('click', () => { state.showScheduler = true; render(); });
       document.getElementById('btnDownload').addEventListener('click', () => { state.showPopup = true; render(); });
     }
 
@@ -829,6 +891,153 @@
           btn.textContent = '📥 Acessar Relatório e Baixar PDF';
           btn.disabled = false;
         }
+      });
+    }
+
+    // ========== SCHEDULER ==========
+    function renderScheduler() {
+      const today = new Date();
+      const days = [];
+      for (let i = 1; i <= 10; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        if (d.getDay() === 0) continue; // pula domingo
+        days.push(d);
+      }
+      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const monthNames = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+      const hours = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'];
+
+      app.innerHTML = `
+        <div class="w-full max-w-lg animate-fadeInUp" style="max-width:520px">
+          <div style="text-align:center;margin-bottom:28px">
+            <div class="header-badge" style="background:#2D5A3D"><span class="dot" style="background:#7CFC7C"></span>Agende uma Conversa</div>
+            <h1 class="page-title">Quer Ajuda com o Digital?</h1>
+            <p class="page-subtitle">Escolha o melhor dia e horário para uma conversa sem compromisso com nosso time.</p>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <label class="field-label">Empresa</label>
+            <p style="font-size:14px;font-weight:600;color:var(--navy)">${state.formData.companyName}</p>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <label class="field-label">Escolha o dia</label>
+            <div id="dayPicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+              ${days.map((d, i) => `
+                <button type="button" class="day-btn" data-date="${d.toISOString().split('T')[0]}" data-idx="${i}">
+                  <span style="font-size:11px;color:var(--text-sec)">${dayNames[d.getDay()]}</span>
+                  <span style="font-size:16px;font-weight:700">${d.getDate()}</span>
+                  <span style="font-size:10px;color:var(--text-sec)">${monthNames[d.getMonth()]}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;display:none" id="hourCard">
+            <label class="field-label">Escolha o horário</label>
+            <div id="hourPicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+              ${hours.map(h => `
+                <button type="button" class="hour-btn" data-hour="${h}">${h}</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;display:none" id="contactCard">
+            <label class="field-label">Seus dados para contato</label>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+              <input type="text" class="input-pill" id="schedName" placeholder="Seu nome" value="${state.leadName || ''}">
+              <input type="tel" class="input-pill" id="schedPhone" placeholder="Telefone / WhatsApp" value="${state.leadPhone || ''}">
+              <textarea class="textarea-pill" id="schedMsg" placeholder="Observações (opcional): melhor horário, assunto específico..." rows="3"></textarea>
+            </div>
+          </div>
+
+          <div style="text-align:center;padding:10px 0 20px">
+            <button class="btn-schedule" id="btnConfirmSched" disabled>Confirmar Agendamento</button>
+          </div>
+
+          <div style="text-align:center">
+            <button class="btn-ghost" id="btnBackFromSched">${icons.arrowLeft} Voltar ao Relatório</button>
+          </div>
+        </div>
+      `;
+
+      let selectedDate = null;
+      let selectedHour = null;
+
+      document.querySelectorAll('.day-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedDate = btn.dataset.date;
+          selectedHour = null;
+          document.getElementById('hourCard').style.display = 'block';
+          document.getElementById('hourCard').classList.add('animate-scaleIn');
+          document.querySelectorAll('.hour-btn').forEach(b => b.classList.remove('selected'));
+          document.getElementById('contactCard').style.display = 'none';
+          document.getElementById('btnConfirmSched').disabled = true;
+        });
+      });
+
+      document.querySelectorAll('.hour-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.hour-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedHour = btn.dataset.hour;
+          document.getElementById('contactCard').style.display = 'block';
+          document.getElementById('contactCard').classList.add('animate-scaleIn');
+          updateConfirmBtn();
+        });
+      });
+
+      function updateConfirmBtn() {
+        const name = document.getElementById('schedName')?.value.trim();
+        const phone = document.getElementById('schedPhone')?.value.trim();
+        document.getElementById('btnConfirmSched').disabled = !(selectedDate && selectedHour && name && phone);
+      }
+
+      ['schedName', 'schedPhone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateConfirmBtn);
+      });
+
+      document.getElementById('btnConfirmSched').addEventListener('click', async () => {
+        const btn = document.getElementById('btnConfirmSched');
+        btn.textContent = 'Agendando...';
+        btn.disabled = true;
+        try {
+          const resp = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              companyName: state.formData.companyName,
+              segment: state.formData.segment,
+              city: state.formData.city,
+              date: selectedDate,
+              hour: selectedHour,
+              name: document.getElementById('schedName').value.trim(),
+              phone: document.getElementById('schedPhone').value.trim(),
+              message: document.getElementById('schedMsg').value.trim(),
+              score: state.result?.overallScore || 0
+            })
+          });
+          if (resp.ok) {
+            state.showScheduler = false;
+            state.showThankYou = true;
+            render();
+          } else {
+            throw new Error('Erro ao agendar');
+          }
+        } catch (err) {
+          alert('Erro ao agendar: ' + err.message);
+          btn.textContent = 'Confirmar Agendamento';
+          btn.disabled = false;
+        }
+      });
+
+      document.getElementById('btnBackFromSched').addEventListener('click', () => {
+        state.showScheduler = false;
+        render();
       });
     }
 

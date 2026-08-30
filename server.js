@@ -167,6 +167,76 @@ app.put('/api/templates/:id', checkAuth, (req, res) => {
   }
 });
 
+// ========== APPOINTMENTS API ==========
+
+// LISTAR agendamentos
+app.get('/api/appointments', checkAuth, (req, res) => {
+  try {
+    const dados = fs.readFileSync(path.join(__dirname, 'appointments.json'), 'utf8');
+    res.json(JSON.parse(dados));
+  } catch (e) {
+    res.json({ appointments: [] });
+  }
+});
+
+// CRIAR agendamento (público — lead agenda)
+app.post('/api/appointments', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'appointments.json');
+    let lista = { appointments: [] };
+    try {
+      const dados = fs.readFileSync(filePath, 'utf8');
+      lista = JSON.parse(dados);
+    } catch(e) {}
+
+    const novo = {
+      ...req.body,
+      _id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    lista.appointments.push(novo);
+    fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
+    res.json({ success: true, appointment: novo });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ATUALIZAR status do agendamento
+app.put('/api/appointments/:id', checkAuth, (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'appointments.json');
+    const dados = fs.readFileSync(filePath, 'utf8');
+    const lista = JSON.parse(dados);
+
+    const idx = lista.appointments.findIndex(a => a._id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: 'Agendamento não encontrado' });
+
+    lista.appointments[idx] = { ...lista.appointments[idx], ...req.body };
+    fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETAR agendamento
+app.delete('/api/appointments/:id', checkAuth, (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'appointments.json');
+    const dados = fs.readFileSync(filePath, 'utf8');
+    const lista = JSON.parse(dados);
+
+    lista.appointments = lista.appointments.filter(a => a._id !== req.params.id);
+    fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ========== PROSPECTION API ==========
 app.post('/api/prospect', checkAuth, async (req, res) => {
   try {

@@ -310,6 +310,7 @@
       <div class="brand">Agência Global <span>— Painel Admin</span></div>
       <div class="nav-links">
         <button class="nav-link active" id="navDiagnostics">Diagnósticos</button>
+        <button class="nav-link" id="navAppointments">Agendamentos</button>
         <button class="nav-link" id="navTemplates">Templates</button>
         <button class="nav-link logout" id="btnLogout">Sair</button>
       </div>
@@ -350,6 +351,38 @@
       <!-- Diagnóstico Detail -->
       <div id="viewDetail" class="hidden"></div>
 
+      <!-- Agendamentos -->
+      <div id="viewAppointments" class="hidden">
+        <div class="page-header">
+          <h1>Agendamentos</h1>
+          <p>Leads que agendaram uma conversa com o time comercial</p>
+        </div>
+        <div class="stats-row" id="appointStatsRow"></div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Próximos Agendamentos</span>
+            <button class="btn btn-sm btn-ghost" id="btnRefreshAppt">Atualizar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>Lead</th>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="appointTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-sec)">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Templates -->
       <div id="viewTemplates" class="hidden">
         <div class="page-header">
@@ -368,6 +401,7 @@
       currentView: 'dashboard',
       diagnostics: [],
       templates: [],
+      appointments: [],
       selectedDiag: null
     };
 
@@ -419,6 +453,12 @@
       renderView();
     });
 
+    document.getElementById('navAppointments').addEventListener('click', () => {
+      state.currentView = 'appointments';
+      updateNav();
+      renderView();
+    });
+
     document.getElementById('navTemplates').addEventListener('click', () => {
       state.currentView = 'templates';
       updateNav();
@@ -426,24 +466,29 @@
     });
 
     document.getElementById('btnRefresh').addEventListener('click', loadData);
+    document.getElementById('btnRefreshAppt').addEventListener('click', loadData);
 
     function updateNav() {
       document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
       if (state.currentView === 'dashboard') document.getElementById('navDiagnostics').classList.add('active');
-      else document.getElementById('navTemplates').classList.add('active');
+      else if (state.currentView === 'appointments') document.getElementById('navAppointments').classList.add('active');
+      else if (state.currentView === 'templates') document.getElementById('navTemplates').classList.add('active');
     }
 
     // ========== LOAD DATA ==========
     async function loadData() {
       try {
-        const [diagResp, templResp] = await Promise.all([
+        const [diagResp, templResp, apptResp] = await Promise.all([
           fetch('/api/diagnostics'),
-          fetch('/api/templates')
+          fetch('/api/templates'),
+          fetch('/api/appointments')
         ]);
         const diagData = await diagResp.json();
         const templData = await templResp.json();
+        const apptData = await apptResp.json();
         state.diagnostics = diagData.diagnostics || [];
         state.templates = templData.templates || [];
+        state.appointments = apptData.appointments || [];
         renderView();
       } catch (e) {
         console.error('Load error:', e);
@@ -454,10 +499,12 @@
     function renderView() {
       document.getElementById('viewDashboard').classList.toggle('hidden', state.currentView !== 'dashboard');
       document.getElementById('viewDetail').classList.toggle('hidden', state.currentView !== 'detail');
+      document.getElementById('viewAppointments').classList.toggle('hidden', state.currentView !== 'appointments');
       document.getElementById('viewTemplates').classList.toggle('hidden', state.currentView !== 'templates');
 
       if (state.currentView === 'dashboard') renderDashboard();
       else if (state.currentView === 'detail') renderDetail();
+      else if (state.currentView === 'appointments') renderAppointments();
       else if (state.currentView === 'templates') renderTemplates();
     }
 
@@ -677,6 +724,88 @@
           <span class="score-bar-label">${value}%</span>
         </div>
       `;
+    }
+
+    // ========== APPOINTMENTS ==========
+    function renderAppointments() {
+      const appts = state.appointments;
+      const pending = appts.filter(a => a.status === 'pending').length;
+      const confirmed = appts.filter(a => a.status === 'confirmed').length;
+      const cancelled = appts.filter(a => a.status === 'cancelled').length;
+
+      document.getElementById('appointStatsRow').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${appts.length}</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--orange)">${pending}</div><div class="stat-label">Pendentes</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--green)">${confirmed}</div><div class="stat-label">Confirmados</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--red)">${cancelled}</div><div class="stat-label">Cancelados</div></div>
+      `;
+
+      const tbody = document.getElementById('appointTableBody');
+      if (appts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-sec)">Nenhum agendamento ainda</td></tr>';
+        return;
+      }
+
+      const sorted = [...appts].sort((a, b) => {
+        const da = new Date(a.date + 'T' + a.hour);
+        const db = new Date(b.date + 'T' + b.hour);
+        return da - db;
+      });
+
+      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const monthNames = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+      tbody.innerHTML = sorted.map(a => {
+        const d = new Date(a.date + 'T12:00:00');
+        const dateStr = `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+        const statusClass = a.status === 'confirmed' ? 'badge-sent' : a.status === 'cancelled' ? 'badge-pending' : 'badge-viewed';
+        const statusLabel = a.status === 'confirmed' ? 'Confirmado' : a.status === 'cancelled' ? 'Cancelado' : 'Pendente';
+        const isPast = new Date(a.date + 'T' + a.hour) < new Date();
+
+        return `
+          <tr style="${isPast ? 'opacity:.5' : ''}">
+            <td><strong>${a.companyName}</strong><br><span style="font-size:11px;color:var(--text-sec)">${a.segment || ''}</span></td>
+            <td>${a.name}<br><span style="font-size:11px;color:var(--text-sec)">${a.phone || ''}</span></td>
+            <td>${dateStr}</td>
+            <td><strong>${a.hour}</strong></td>
+            <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+            <td>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                ${a.status === 'pending' ? `
+                  <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--green)" onclick="updateAppointment('${a._id}','confirmed')">Confirmar</button>
+                  <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--red)" onclick="updateAppointment('${a._id}','cancelled')">Cancelar</button>
+                ` : ''}
+                <button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 8px;color:var(--red)" onclick="deleteAppointment('${a._id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function updateAppointment(id, status) {
+      try {
+        await fetch(`/api/appointments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        showToast(status === 'confirmed' ? 'Agendamento confirmado!' : 'Agendamento cancelado');
+        await loadData();
+      } catch (e) {
+        showToast('Erro ao atualizar');
+      }
+    }
+
+    async function deleteAppointment(id) {
+      if (!confirm('Excluir este agendamento?')) return;
+      try {
+        await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+        showToast('Agendamento excluído');
+        await loadData();
+      } catch (e) {
+        showToast('Erro ao excluir');
+      }
     }
 
     // ========== TEMPLATES ==========
