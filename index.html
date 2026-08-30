@@ -446,6 +446,7 @@
         websiteUrl: '',
         hasInstagram: null,
         hasWebsite: null,
+        hasGMB: null,
         usesAI: null,
         aiDescription: ''
       },
@@ -557,6 +558,20 @@
                   <button type="button" class="no-have-btn ${state.formData.hasWebsite === false ? 'selected' : ''}" id="noWebsite">Não tenho</button>
                 </div>
                 <p class="input-help">A IA vai visitar e auditar seu site (SEO, design, tecnologia)</p>
+              </div>
+              <div>
+                <label class="field-label">Possui perfil no Google Meu Negócio?</label>
+                <div class="ai-toggle" style="margin-top:12px">
+                  <button type="button" class="ai-btn ${state.formData.hasGMB === true ? 'selected' : ''}" id="gmbYes">
+                    <div class="icon">📍</div>
+                    <div class="label">Sim, tenho</div>
+                  </button>
+                  <button type="button" class="ai-btn ${state.formData.hasGMB === false ? 'selected' : ''}" id="gmbNo">
+                    <div class="icon">🚫</div>
+                    <div class="label">Não tenho</div>
+                  </button>
+                </div>
+                <p class="input-help">A IA vai auditar seu perfil: fotos, posts, avaliações, horário, completude</p>
               </div>
             </div>
 
@@ -886,6 +901,11 @@
         if (state.formData.hasWebsite === false) { state.formData.websiteUrl = ''; }
         render();
       });
+
+      const gmbYes = document.getElementById('gmbYes');
+      const gmbNo = document.getElementById('gmbNo');
+      if (gmbYes) gmbYes.addEventListener('click', () => { state.formData.hasGMB = state.formData.hasGMB === true ? null : true; render(); });
+      if (gmbNo) gmbNo.addEventListener('click', () => { state.formData.hasGMB = state.formData.hasGMB === false ? null : false; render(); });
 
       const aiYes = document.getElementById('aiYes');
       const aiNo = document.getElementById('aiNo');

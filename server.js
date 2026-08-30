@@ -290,7 +290,35 @@ Gere a estratégia de prospecção seguindo o formato JSON do sistema. Seja espe
   }
 });
 
-// ========== FIM ADMIN CRUD ==========
+// ========== GMB LOOKUP ==========
+const GMB_SCRIPT = path.join(__dirname, 'gmb-lookup.ps1');
+
+app.get('/api/gmb-lookup', checkAuth, async (req, res) => {
+  try {
+    const { company, city, segment } = req.query;
+    if (!company || !city) {
+      return res.status(400).json({ error: 'company and city are required' });
+    }
+
+    const result = execFileSync('powershell', [
+      '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', GMB_SCRIPT,
+      '-CompanyName', company,
+      '-City', city,
+      '-Segment', segment || ''
+    ], { encoding: 'utf8', timeout: 60000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
+
+    try {
+      res.json(JSON.parse(result.trim()));
+    } catch (e) {
+      res.json({ raw: result.trim() });
+    }
+  } catch (err) {
+    console.error('[GMB] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== FIM ADMIN CR
 app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

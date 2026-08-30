@@ -104,7 +104,7 @@ function extractContent(html, url) {
  * Main AI Analysis — Agente BACY
  */
 export async function analyzeWithAI(formData) {
-  const { companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite } = formData;
+  const { companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB } = formData;
 
   // Step 1: Fetch website content (Reconhecimento inicial)
   let websiteData = null;
@@ -112,8 +112,21 @@ export async function analyzeWithAI(formData) {
     websiteData = await fetchWebsiteContent(websiteUrl);
   }
 
-  // Step 2: Build and send BACY prompt
-  const bacyPrompt = buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, websiteData);
+  // Step 2: Fetch GMB data via Google Places API
+  let gmbData = null;
+  if (hasGMB !== false && city) {
+    try {
+      const gmbResp = await fetch(`${API_BASE}/api/gmb-lookup?company=${encodeURIComponent(companyName)}&city=${encodeURIComponent(city)}&segment=${encodeURIComponent(segment || '')}`);
+      if (gmbResp.ok) {
+        gmbData = await gmbResp.json();
+      }
+    } catch (e) {
+      console.error('GMB lookup failed:', e.message);
+    }
+  }
+
+  // Step 3: Build and send BACY prompt
+  const bacyPrompt = buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB, websiteData, gmbData);
 
   const analysisResp = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
@@ -231,9 +244,10 @@ Você recebe 3 informações básicas do lead (nome da empresa, site, @ do Insta
 /**
  * Build the BACY investigation prompt
  */
-function buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, websiteData) {
+function buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB, websiteData, gmbData) {
   const hasSite = hasWebsite !== false && websiteUrl;
   const hasInsta = hasInstagram !== false && instagramUrl;
+  const gmbInformed = hasGMB !== null && hasGMB !== undefined;
 
   let prompt = `Conduza uma auditoria completa da presença digital da empresa abaixo, seguindo o processo de investigação do Agente BACY.
 
@@ -242,7 +256,8 @@ DADOS DO LEAD:
 - Ramo de atuação: ${segment || 'Não informado'}
 - Cidade: ${city || 'Não informado'}
 - Site: ${hasSite ? websiteUrl : 'Empresa NÃO possui site'}
-- Instagram: ${hasInsta ? instagramUrl : 'Empresa NÃO possui perfil de Instagram'}`;
+- Instagram: ${hasInsta ? instagramUrl : 'Empresa NÃO possui perfil de Instagram'}
+- Google Meu Negócio: ${gmbInformed ? (hasGMB ? 'Cliente CONFIRMOU que possui perfil GMB' : 'Cliente INFORMOU que NÃO possui perfil GMB') : 'Não informado — verificar manualmente'}`;
 
   if (websiteData) {
     prompt += `
@@ -267,13 +282,47 @@ DADOS EXTRAÍDOS DO SITE (Reconhecimento Inicial):
 - Imagens: ${websiteData.images.length} imagens, ${websiteData.images.filter(i => i.alt).length} com alt text`;
   }
 
+  if (gmbData && gmbData.candidates && gmbData.candidates.length > 0) {
+    const gmb = gmbData.candidates[0];
+    prompt += `
+
+DADOS DO GOOGLE MEU NEGÓCIO (via Google Places API):
+- Nome no Google: ${gmb.name || 'N/A'}
+- Endereço: ${gmb.formatted_address || 'N/A'}
+- Telefone: ${gmb.formatted_phone_number || 'N/A'}
+- Website: ${gmb.website || 'N/A'}
+- Nota média: ${gmb.rating || 'N/A'} (${gmb.user_rating_total || 0} avaliações)
+- Tipos/Categorias: ${gmb.types?.join(', ') || 'N/A'}
+- Horário: ${gmb.opening_hours?.open_now !== undefined ? (gmb.opening_hours.open_now ? 'Aberto agora' : 'Fechado agora') : 'N/A'}
+- URL Google Maps: ${gmb.url || 'N/A'}
+- Fotos disponíveis: ${gmb.photos?.length || 0} fotos
+- Avaliações recentes: ${gmb.reviews?.slice(0, 3).map(r => `${r.author_name} (${r.rating}★): "${r.text?.slice(0, 100) || ''}"`).join(' | ') || 'Nenhuma'}`;
+  } else if (gmbData && gmbData.status === 'ZERO_RESULTS') {
+    prompt += `
+
+DADOS DO GOOGLE MEU NEGÓCIO:
+- Nenhum perfil GMB encontrado para "${companyName}" em "${city}". Registre como achado CRÍTICO.`;
+  }
+
   prompt += `
 
 INSTRUÇÕES DE INVESTIGAÇÃO (execute mentalmente cada passo):
 
 1. SITE: ${hasSite ? 'Avalie status, SSL, carregamento, design, CTA (WhatsApp/form/tel), mobile-friendly' : 'A empresa NÃO possui site — registre como achado CRÍTICO e recomende criação de site/landing page'}
 2. SEO: Busque "[nome empresa] ${city || '[cidade]'}" e "[ramo] em ${city || '[cidade]'}" — a empresa aparece? Como está posicionada?
-3. GOOGLE MEU NEGÓCIO: Verifique se existe perfil GMB — nome, categoria, endereço, horário, fotos, nota, avaliações
+3. GOOGLE MEU NEGÓCIO:
+   - Busque "[nome empresa] ${city || '[cidade]'}" no Google para localizar o painel GMB
+   - ${hasGMB === true ? 'O cliente CONFIRMOU que possui perfil — VERIFIFE:' : 'O cliente INFORMOU que NÃO possui perfil — registre como CRÍTICO. Busque mesmo assim para confirmar se existe perfil não otimizado.'}
+   a) Perfil completo? (nome, endereço, horário, telefone, website, categoria principal)
+   b) Fotos: quantas? Qualidade? (capa, logo, interior, equipe) — há fotos genéricas ou reais?
+   c) Nota média e quantidade de avaliações — responde a avaliações? Como responde?
+   d) POSTS: Quantos posts nas últimas 4 semanas? Frequência (diária, semanal, rara)?
+   e) DATA DA ÚLTIMA PUBLICAÇÃO: Quando foi o último post? Há quanto tempo está sem postar?
+   f) DESTAQUES/CATEGORIAS: Possui destaques criados? Categorias secundárias configuradas?
+   g) LINK NA BIO: O campo "site" aponta para onde? (site, WhatsApp, linktree, nada)
+   h) FAQ/Perguntas frequentes: respondidas?
+   i) Produtos/Serviços cadastrados?
+   - Se encontrar perfil não otimizado ou abandonado, classifique como achado RUIM/CRÍTICO
 4. INSTAGRAM/REDES: ${hasInsta ? 'Avalie seguidores, posts, última postagem, qualidade visual, link na bio, Stories/Destaques, gestão profissional vs. abandonado' : 'A empresa NÃO possui Instagram — registre como achado CRÍTICO e recomende criação e gestão de perfil'}
 5. REPUTAÇÃO: Verifique avaliações Google, Reclame Aqui, menções em redes sociais
 6. CONCORRÊNCIA: Identifique 2-3 concorrentes diretos posicionados no mesmo ramo/cidade
@@ -424,6 +473,7 @@ DADOS DA EMPRESA:
 - Cidade: ${formData.city || 'Não informado'}
 - Site: ${formData.hasWebsite === false ? 'Não possui site' : (formData.websiteUrl || 'Não informado')}
 - Instagram: ${formData.hasInstagram === false ? 'Não possui Instagram' : (formData.instagramUrl || 'Não informado')}
+- Google Meu Negócio: ${formData.hasGMB === false ? 'Não possui' : (formData.hasGMB === true ? 'Possui' : 'Não informado')}
 - Score geral: ${auditResult.overallScore}/100
 
 RESUMO DA AUDITORIA:
