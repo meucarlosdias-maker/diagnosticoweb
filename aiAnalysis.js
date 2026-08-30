@@ -1,13 +1,12 @@
 /**
- * AI Analysis Service
- * Uses NVIDIA DeepSeek API to perform real web analysis as a digital specialist
+ * AI Analysis Service — Agente BACY (Auditor de Presença Digital)
+ * NVIDIA API Kimi k3 + CORS proxy para busca web
  */
 
 const AI_API_KEY = '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';
 const AI_BASE_URL = 'https://integrate.api.nvidia.com/v1';
 const AI_MODEL = 'moonshotai/kimi-k3';
 
-// Use local server proxy for AI calls (avoids CORS), CORS proxies for website fetch
 const API_BASE = window.location.origin;
 
 const CORS_PROXIES = [
@@ -23,7 +22,7 @@ async function fetchWebsiteContent(url) {
   for (const proxy of CORS_PROXIES) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const resp = await fetch(proxy + encodeURIComponent(url), {
         signal: controller.signal,
         headers: { 'Accept': 'text/html' }
@@ -31,7 +30,7 @@ async function fetchWebsiteContent(url) {
       clearTimeout(timeout);
       if (resp.ok) {
         const html = await resp.text();
-        return extractContent(html);
+        return extractContent(html, url);
       }
     } catch (e) {
       continue;
@@ -43,7 +42,7 @@ async function fetchWebsiteContent(url) {
 /**
  * Extract useful content from HTML
  */
-function extractContent(html) {
+function extractContent(html, url) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
@@ -57,8 +56,6 @@ function extractContent(html) {
   const keywords = getMeta('keywords') || '';
   const ogTitle = getMeta('og:title') || '';
   const ogImage = getMeta('og:image') || '';
-  const ogType = getMeta('og:type') || '';
-  const author = getMeta('author') || '';
 
   const h1s = [...doc.querySelectorAll('h1')].map(e => e.textContent.trim()).filter(Boolean).slice(0, 5);
   const h2s = [...doc.querySelectorAll('h2')].map(e => e.textContent.trim()).filter(Boolean).slice(0, 8);
@@ -66,7 +63,7 @@ function extractContent(html) {
   const footerText = doc.querySelector('footer')?.textContent?.trim()?.slice(0, 500) || '';
   const bodyText = doc.querySelector('body')?.textContent?.replace(/\s+/g, ' ')?.trim()?.slice(0, 3000) || '';
 
-  const hasSSL = html.includes('https');
+  const hasSSL = url?.startsWith('https');
   const hasViewport = html.includes('viewport');
   const hasSchema = html.includes('application/ld+json');
   const scripts = [...doc.querySelectorAll('script[src]')].map(e => e.getAttribute('src')).filter(Boolean);
@@ -82,24 +79,20 @@ function extractContent(html) {
   if (scripts.some(s => s.includes('wix'))) techIndicators.push('Wix');
   if (stylesheets.some(s => s.includes('bootstrap'))) techIndicators.push('Bootstrap');
   if (stylesheets.some(s => s.includes('tailwind'))) techIndicators.push('Tailwind CSS');
-  if (stylesheets.some(s => s.includes('elementor'))) techIndicators.push('Elementor');
   if (scripts.some(s => s.includes('react') || s.includes('next'))) techIndicators.push('React/Next.js');
   if (scripts.some(s => s.includes('vue'))) techIndicators.push('Vue.js');
-  if (scripts.some(s => s.includes('angular'))) techIndicators.push('Angular');
   if (scripts.some(s => s.includes('jquery'))) techIndicators.push('jQuery');
   if (scripts.some(s => s.includes('gtag') || s.includes('analytics'))) techIndicators.push('Google Analytics');
   if (scripts.some(s => s.includes('facebook') || s.includes('fbq'))) techIndicators.push('Facebook Pixel');
   if (scripts.some(s => s.includes('hotjar'))) techIndicators.push('Hotjar');
-  if (scripts.some(s => s.includes('intercom'))) techIndicators.push('Intercom');
-  if (scripts.some(s => s.includes('crisp'))) techIndicators.push('Crisp');
   if (scripts.some(s => s.includes('tidio'))) techIndicators.push('Tidio');
 
   const hasWhatsApp = html.includes('wa.me') || html.includes('whatsapp') || html.includes('api.whatsapp');
   const hasContactForm = html.includes('contato') || html.includes('contact') || html.includes('form');
-  const hasPhone = html.includes('tel:') || html.includes('telefone') || html.includes('(11)') || html.includes('(21)');
+  const hasPhone = html.includes('tel:') || html.includes('telefone');
 
   return {
-    title, description, keywords, ogTitle, ogImage, ogType, author,
+    url, title, description, keywords, ogTitle, ogImage,
     h1s, h2s, navLinks, footerText, bodyText: bodyText.slice(0, 2000),
     hasSSL, hasViewport, hasSchema,
     techIndicators, scripts: scripts.length, stylesheets: stylesheets.length,
@@ -108,67 +101,19 @@ function extractContent(html) {
 }
 
 /**
- * Search for company info via OpenAI
- */
-async function searchCompanyInfo(companyName, segment, websiteUrl) {
-  try {
-    const resp = await fetch(`${API_BASE}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: 'Você é um pesquisador de mercado. Retorne APENAS um objeto JSON válido, sem markdown, sem ```json, sem texto antes ou depois.'
-          },
-          {
-            role: 'user',
-            content: `Pesquise e retorne um JSON com informações sobre a empresa "${companyName}" do segmento "${segment}" com site "${websiteUrl}". 
-
-Retorne APENAS este JSON (sem nenhum texto adicional):
-{
-  "knownInfo": "breve descrição do que se sabe sobre a empresa",
-  "marketPosition": "posição de mercado estimada",
-  "competitors": ["concorrente1", "concorrente2", "concorrente3"],
-  "industryTrends": ["tendencia1", "tendencia2", "tendencia3"],
-  "digitalChallenges": ["desafio1", "desafio2"]
-}`
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 1500
-      })
-    });
-
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    let content = data.choices[0]?.message?.content || data.choices[0]?.message?.reasoning_content || '';
-    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(content);
-  } catch (e) {
-    console.error('Search error:', e);
-    return null;
-  }
-}
-
-/**
- * Main AI Analysis - acts as a digital specialist
+ * Main AI Analysis — Agente BACY
  */
 export async function analyzeWithAI(formData) {
   const { companyName, segment, instagramUrl, websiteUrl } = formData;
 
-  // Step 1: Fetch website content
+  // Step 1: Fetch website content (Reconhecimento inicial)
   let websiteData = null;
   if (websiteUrl) {
     websiteData = await fetchWebsiteContent(websiteUrl);
   }
 
-  // Step 2: Search for company info
-  const companyInfo = await searchCompanyInfo(companyName, segment, websiteUrl);
-
-  // Step 3: Analyze with AI as specialist
-  const specialistPrompt = buildSpecialistPrompt(companyName, segment, instagramUrl, websiteUrl, websiteData, companyInfo);
+  // Step 2: Build and send BACY prompt
+  const bacyPrompt = buildBACYPrompt(companyName, segment, instagramUrl, websiteUrl, websiteData);
 
   const analysisResp = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
@@ -176,11 +121,11 @@ export async function analyzeWithAI(formData) {
     body: JSON.stringify({
       model: AI_MODEL,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: specialistPrompt }
+        { role: 'system', content: BACY_SYSTEM_PROMPT },
+        { role: 'user', content: bacyPrompt }
       ],
-      temperature: 0.4,
-      max_tokens: 8000
+      temperature: 0.3,
+      max_tokens: 12000
     })
   });
 
@@ -199,79 +144,106 @@ export async function analyzeWithAI(formData) {
     result = createFallbackResult(companyName, segment);
   }
 
-  // Enrich with web data
-  result.webResults = buildWebResults(websiteData, companyInfo, instagramUrl, websiteUrl, segment);
+  // Attach raw website data
   result.websiteData = websiteData;
 
   return result;
 }
 
 /**
- * System prompt - Digital Specialist persona
+ * System prompt — Agente BACY
  */
-const SYSTEM_PROMPT = `Você é um ESPECIALISTA SÊNIOR EM MARKETING DIGITAL E TRANSFORMAÇÃO DIGITAL com 20 anos de experiência. Todo o seu atendimento e comunicação deve ser feito em Português do Brasil.
+const BACY_SYSTEM_PROMPT = `Você é o **Auditor Digital da BACY Agência**, um agente autônomo especializado em SEO local, redes sociais, reputação online e automação de atendimento para pequenas e médias empresas brasileiras. Todo o seu atendimento e comunicação deve ser feito em Português do Brasil.
 
-ANÁLISE ESPECIALIZADA:
-- Você analisa a presença digital de empresas como um consultor top-tier
-- Você identifica problemas que um CEO ou dono de empresa não perceberia
-- Você recomenda soluções práticas e mensuráveis
-- Você entende de SEO, redes sociais, UX/UI, automação, IA, e performance web
-- Você conhece benchmarks do mercado brasileiro
+## Seu papel
+Você recebe 3 informações básicas do lead (nome da empresa, site, @ do Instagram) e conduz sozinho uma auditoria completa, ativa e detalhada da presença digital da empresa.
 
-SUAS REGRAS:
-1. Seja ESPECÍFICO e DETALHADO - nada de respostas genéricas
-2. Baseie sua análise nos dados reais fornecidos
-3. Identifique OPORTUNIDADES CONCRETAS que a empresa está perdendo
-4. Recomende estratégias e ações com foco no resultado e retorno esperado
-5. NÃO mencione nomes de ferramentas, preços ou valores monetários
-6. Foque no IMPACTO e RETORNO (ROI) de cada recomendação
-7. Considere o porte e segmento da empresa para recomendações proporcionais
+## Regras de rigor
+1. Toda afirmação deve estar amparada por algo que você efetivamente encontrou — não invente números
+2. Se um site/perfil não carregar/não existir, registre como achado crítico
+3. Diferencie claramente o que foi **verificado diretamente** do que foi **inferido**
+4. Seja consultivo e direto — raio-x rápido e honesto, não relatório inflado
+5. Toda recomendação deve nascer de um achado real, nunca de suposição genérica
+6. NÃO mencione nomes de ferramentas específicas, preços ou valores monetários
+7. Foque no IMPACTO e RETORNO de cada recomendação
 8. Use linguagem acessível mas técnica o suficiente para impressionar
-9. Todas as respostas devem ser em Português do Brasil
 
-FORMATO DE SAÍDA (JSON):
+## Formato de saída (JSON válido, sem markdown, sem texto antes ou depois):
 {
   "overallScore": número de 0 a 100,
   "categoryScores": {
-    "digitalPresence": número 0-100,
-    "engagement": número 0-100,
+    "site": número 0-100,
     "seo": número 0-100,
-    "reputation": número 0-100,
-    "operational": número 0-100
+    "gmb": número 0-100,
+    "socialMedia": número 0-100,
+    "reputation": número 0-100
   },
-  "expertSummary": "resumo executivo de 2-3 frases como um consultor falaria ao CEO",
-  "strengths": ["ponto forte 1 com detalhes", "ponto forte 2"],
-  "weaknesses": ["problema 1 - explique por que é grave", "problema 2"],
-  "opportunities": ["oportunidade 1 - o que ganha ao implementar", "oportunidade 2"],
-  "aiRecommendations": [
-    {
-      "title": "Título da recomendação",
-      "description": "Descrição detalhada da estratégia, como implementar e o resultado esperado",
-      "implementation": "facil|medio|complexo",
-      "impact": "alto|medio|baixo",
-      "expectedROI": "retorno esperado em termos de resultado (ex: aumento de leads, melhoria de conversão)"
+  "expertSummary": "resumo executivo de 4-6 linhas: nota geral, maior risco, maior oportunidade, uma frase de gancho comercial",
+  "findings": {
+    "site": {
+      "status": "Bom|Ruim|Crítico|Não verificado",
+      "evidence": "o que foi encontrado no site",
+      "risk": "risco identificado",
+      "action": "ação recomendada específica"
+    },
+    "seo": {
+      "status": "...",
+      "evidence": "...",
+      "risk": "...",
+      "action": "..."
+    },
+    "gmb": {
+      "status": "...",
+      "evidence": "...",
+      "risk": "...",
+      "action": "..."
+    },
+    "socialMedia": {
+      "status": "...",
+      "evidence": "...",
+      "risk": "...",
+      "action": "..."
+    },
+    "reputation": {
+      "status": "...",
+      "evidence": "...",
+      "risk": "...",
+      "action": "..."
     }
-  ],
-  "competitorInsights": "análise competitiva baseada no segmento",
-  "priorityActions": ["ação 1 para os próximos 30 dias", "ação 2", "ação 3"]
+  },
+  "competitorAnalysis": {
+    "competitors": ["concorrente1", "concorrente2", "concorrente3"],
+    "whatTheyDoBetter": "o que os concorrentes fazem melhor",
+    "identifiedGap": "gap competitivo identificado"
+  },
+  "paidAds": {
+    "status": "Verificado|Não verificável remotamente",
+    "evidence": "evidência encontrada ou justificativa"
+  },
+  "actionPlan": {
+    "now": ["ação 1 - baixo esforço / alto impacto", "ação 2"],
+    "shortTerm": ["ação 3 - médio prazo 1-3 meses", "ação 4"],
+    "strategic": ["ação 5 - posicionamento de marca, médio-longo prazo"]
+  },
+  "whereWeCanHelp": "conectar as lacunas encontradas com soluções de automação, site, GMB, redes, mídia paga"
 }`;
 
 /**
- * Build the specialist analysis prompt
+ * Build the BACY investigation prompt
  */
-function buildSpecialistPrompt(companyName, segment, instagramUrl, websiteUrl, websiteData, companyInfo) {
-  let prompt = `Analise a presença digital da empresa abaixo como um especialista sênior e retorne o JSON conforme o formato especificado.
+function buildBACYPrompt(companyName, segment, instagramUrl, websiteUrl, websiteData) {
+  let prompt = `Conduza uma auditoria completa da presença digital da empresa abaixo, seguindo o processo de investigação do Agente BACY.
 
-DADOS DA EMPRESA:
-- Nome: ${companyName}
-- Segmento: ${segment}
-- Instagram: ${instagramUrl}
-- Website: ${websiteUrl}`;
+DADOS DO LEAD:
+- Nome da empresa: ${companyName}
+- Ramo de atuação: ${segment || 'Não informado'}
+- Site: ${websiteUrl || 'Não informado'}
+- Instagram: ${instagramUrl || 'Não informado'}`;
 
   if (websiteData) {
     prompt += `
 
-DADOS EXTRAÍDOS DO SITE:
+DADOS EXTRAÍDOS DO SITE (Reconhecimento Inicial):
 - Título: ${websiteData.title}
 - Descrição: ${websiteData.description}
 - Keywords: ${websiteData.keywords}
@@ -283,7 +255,7 @@ DADOS EXTRAÍDOS DO SITE:
 - Responsivo mobile: ${websiteData.hasViewport ? 'Sim' : 'Não'}
 - Schema markup: ${websiteData.hasSchema ? 'Sim' : 'Não'}
 - Tecnologias detectadas: ${websiteData.techIndicators.join(', ') || 'Nenhuma'}
-- Quantidade de scripts: ${websiteData.scripts}
+- Scripts carregados: ${websiteData.scripts}
 - Possui WhatsApp no site: ${websiteData.hasWhatsApp ? 'Sim' : 'Não'}
 - Possui formulário de contato: ${websiteData.hasContactForm ? 'Sim' : 'Não'}
 - Possui telefone: ${websiteData.hasPhone ? 'Sim' : 'Não'}
@@ -291,66 +263,25 @@ DADOS EXTRAÍDOS DO SITE:
 - Imagens: ${websiteData.images.length} imagens, ${websiteData.images.filter(i => i.alt).length} com alt text`;
   }
 
-  if (companyInfo) {
-    prompt += `
-
-INFORMAÇÕES DE MERCADO:
-- Posição de mercado: ${companyInfo.marketPosition}
-- Concorrentes conhecidos: ${companyInfo.competitors?.join(', ')}
-- Tendências do setor: ${companyInfo.industryTrends?.join(', ')}
-- Desafios digitais do setor: ${companyInfo.digitalChallenges?.join(', ')}`;
-  }
-
   prompt += `
 
-INSTRUÇÕES ESPECÍFICAS:
-1. Analise o site como um auditor UX/SEO - se tem SSL, responsividade, schema, velocidade
-2. Avalie a presença no Instagram como um social media manager - frequência, engajamento, qualidade
-3. Identifique GAPs de automação - onde a empresa perde tempo ou clientes por falta de automação
-4. Recomende SOLUÇÕES DE IA específicas - nome da ferramenta, como usar, quanto custa
-5. Dê um SCORE REALISTA baseado nos dados encontrados, não medalhas de participação
-6. Seja duro nos problemas - o dono precisa saber onde está perdendo dinheiro
-7. Inclua ações PRIORITÁRIAS para os próximos 30 dias
+INSTRUÇÕES DE INVESTIGAÇÃO (execute mentalmente cada passo):
 
-Retorne APENAS o JSON, sem texto adicional.`;
+1. SITE: Avalie status, SSL, carregamento, design, CTA (WhatsApp/form/tel), mobile-friendly
+2. SEO: Busque "[nome empresa] [cidade]" e "[ramo] em [cidade]" — a empresa aparece? Como está posicionada?
+3. GOOGLE MEU NEGÓCIO: Verifique se existe perfil GMB — nome, categoria, endereço, horário, fotos, nota, avaliações
+4. INSTAGRAM/REDES: Avalie seguidores, posts, última postagem, qualidade visual, link na bio, Stories/Destaques, gestão profissional vs. abandonado
+5. REPUTAÇÃO: Verifique avaliações Google, Reclame Aqui, menções em redes sociais
+6. CONCORRÊNCIA: Identifique 2-3 concorrentes diretos posicionados no mesmo ramo/cidade
+7. PUBLICIDADE PAGA: Procure sinais de pixel Meta/Google no site, anúncios ativos
+
+Dê um SCORE REALISTA baseado nos dados encontrados — não medalhas de participação.
+Seja duro nos problemas — o dono precisa saber onde está perdendo clientes.
+Inclua um plano de ação priorizado (resolver agora / médio prazo / estratégico).
+
+Retorne APENAS o JSON conforme o formato do sistema, sem texto adicional.`;
 
   return prompt;
-}
-
-/**
- * Build web results for the report
- */
-function buildWebResults(websiteData, companyInfo, instagramUrl, websiteUrl, segment) {
-  const results = [];
-
-  if (websiteData) {
-    results.push({
-      title: 'Análise do Website',
-      description: `${websiteData.title || 'Sem título'} — ${websiteData.techIndicators.join(', ') || 'Tecnologia não identificada'}. SSL: ${websiteData.hasSSL ? '✅' : '❌'}. Responsivo: ${websiteData.hasViewport ? '✅' : '❌'}. Schema: ${websiteData.hasSchema ? '✅' : '❌'}. ${websiteData.images.length} imagens (${websiteData.images.filter(i => i.alt).length} com alt). ${websiteData.scripts} scripts carregados.`,
-      url: websiteUrl,
-      source: 'website'
-    });
-  }
-
-  if (instagramUrl) {
-    results.push({
-      title: 'Perfil Instagram',
-      description: `Perfil identificado: ${instagramUrl}. Análise de engajamento, frequência de posts e qualidade do conteúdo visual realizada pela IA.`,
-      url: instagramUrl,
-      source: 'instagram'
-    });
-  }
-
-  if (companyInfo) {
-    results.push({
-      title: `Análise de Mercado: ${segment}`,
-      description: `Segmento analisado. Concorrentes identificados: ${companyInfo.competitors?.join(', ') || 'N/A'}. Tendências: ${companyInfo.industryTrends?.join(', ') || 'N/A'}. Desafios: ${companyInfo.digitalChallenges?.join(', ') || 'N/A'}.`,
-      url: '',
-      source: 'market'
-    });
-  }
-
-  return results;
 }
 
 /**
@@ -359,28 +290,18 @@ function buildWebResults(websiteData, companyInfo, instagramUrl, websiteUrl, seg
 function createFallbackResult(companyName, segment) {
   return {
     overallScore: 50,
-    categoryScores: {
-      digitalPresence: 50,
-      engagement: 40,
-      seo: 45,
-      reputation: 50,
-      operational: 40
+    categoryScores: { site: 50, seo: 40, gmb: 45, socialMedia: 50, reputation: 50 },
+    expertSummary: `Auditoria básica da empresa ${companyName} do segmento ${segment}. Não foi possível realizar análise completa via IA neste momento.`,
+    findings: {
+      site: { status: 'Não verificado', evidence: 'Análise indisponível', risk: 'Desconhecido', action: 'Solicitar nova análise' },
+      seo: { status: 'Não verificado', evidence: 'Análise indisponível', risk: 'Desconhecido', action: 'Solicitar nova análise' },
+      gmb: { status: 'Não verificado', evidence: 'Análise indisponível', risk: 'Desconhecido', action: 'Solicitar nova análise' },
+      socialMedia: { status: 'Não verificado', evidence: 'Análise indisponível', risk: 'Desconhecido', action: 'Solicitar nova análise' },
+      reputation: { status: 'Não verificado', evidence: 'Análise indisponível', risk: 'Desconhecido', action: 'Solicitar nova análise' }
     },
-    expertSummary: `Análise básica da empresa ${companyName} do segmento ${segment}. Não foi possível realizar análise completa via IA neste momento.`,
-    strengths: ['Presença online identificada'],
-    weaknesses: ['Análise detalhada indisponível no momento'],
-    opportunities: ['Realizar auditoria completa da presença digital'],
-    aiRecommendations: [
-      {
-        title: 'Auditoria Digital Completa',
-        description: 'Realizar análise detalhada de presença digital, SEO e redes sociais',
-        implementation: 'medio',
-        impact: 'alto',
-        estimatedCost: 'Sob consulta',
-        expectedROI: 'Melhoria significativa na presença digital'
-      }
-    ],
-    competitorInsights: 'Análise competitiva pendente',
-    priorityActions: ['Solicitar nova análise quando o site estiver acessível']
+    competitorAnalysis: { competitors: [], whatTheyDoBetter: 'Não verificado', identifiedGap: 'Não verificado' },
+    paidAds: { status: 'Não verificável remotamente', evidence: 'Análise indisponível' },
+    actionPlan: { now: ['Solicitar nova análise completa'], shortTerm: [], strategic: [] },
+    whereWeCanHelp: 'Análise pendente — realize uma nova auditoria quando o sistema estiver disponível.'
   };
 }

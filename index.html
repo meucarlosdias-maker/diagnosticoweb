@@ -567,13 +567,24 @@
     // ========== RESULTS ==========
     function renderResults() {
       const r = state.result;
+      const f = r.findings || {};
+      const plan = r.actionPlan || {};
+      const comp = r.competitorAnalysis || {};
+
+      const findingCategories = [
+        { key: 'site', title: 'Site', icon: '🌐', color: '#2980B9' },
+        { key: 'seo', title: 'SEO / Google', icon: '🔍', color: '#8B5CF6' },
+        { key: 'gmb', title: 'Google Meu Negócio', icon: '📍', color: '#2D5A3D' },
+        { key: 'socialMedia', title: 'Instagram e Redes Sociais', icon: '📱', color: '#C0392B' },
+        { key: 'reputation', title: 'Reputação e Avaliações', icon: '⭐', color: '#F39C12' },
+      ];
 
       app.innerHTML = `
         <div class="w-full max-w-2xl animate-fadeInUp" style="max-width:640px">
           <div style="text-align:center;margin-bottom:32px">
-            <div class="header-badge" style="background:#2D5A3D"><span class="dot" style="background:#7CFC7C"></span>Análise por IA Completa</div>
-            <h1 class="page-title">Diagnóstico de ${state.formData.companyName}</h1>
-            <p class="page-subtitle">${r.expertSummary || 'Análise completa da presença digital'}</p>
+            <div class="header-badge" style="background:#2D5A3D"><span class="dot" style="background:#7CFC7C"></span>Auditoria BACY Completa</div>
+            <h1 class="page-title">${state.formData.companyName}</h1>
+            <p class="page-subtitle">${r.expertSummary || 'Auditoria completa da presença digital'}</p>
           </div>
 
           <div style="text-align:center;margin-bottom:32px">
@@ -588,96 +599,103 @@
               <div class="icon-circle">${icons.target}</div>
               <span class="title">Scores por Categoria</span>
             </div>
-            ${renderCategoryBars(r.categoryScores)}
+            ${renderBACYCategoryBars(r.categoryScores)}
           </div>
 
-          ${r.strengths?.length ? `
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-header">
-              <div class="icon-circle" style="background:#D4EDDA">${icons.check}</div>
-              <span class="title" style="color:#2D5A3D">Pontos Fortes</span>
-            </div>
-            ${r.strengths.map(s => `<div class="list-item"><div class="bullet" style="background:#2D5A3D"></div><span class="text">${s}</span></div>`).join('')}
-          </div>` : ''}
-
-          ${r.weaknesses?.length ? `
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-header">
-              <div class="icon-circle" style="background:#FDEAEA">
-                <svg viewBox="0 0 24 24" style="stroke:#C0392B"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          ${findingCategories.map(cat => {
+            const finding = f[cat.key];
+            if (!finding) return '';
+            return `
+            <div class="card" style="margin-bottom:20px">
+              <div class="section-header">
+                <div class="icon-circle" style="background:${cat.color}15">
+                  <span style="font-size:18px">${cat.icon}</span>
+                </div>
+                <span class="title">${cat.title}</span>
+                <span class="badge badge-${finding.status === 'Bom' ? 'sent' : finding.status === 'Critico' ? 'pending' : 'viewed'}" style="margin-left:auto">${finding.status}</span>
               </div>
-              <span class="title" style="color:#C0392B">Problemas Identificados</span>
-            </div>
-            ${r.weaknesses.map(w => `<div class="list-item"><div class="bullet" style="background:#C0392B"></div><span class="text">${w}</span></div>`).join('')}
-          </div>` : ''}
+              <div style="font-size:12px;line-height:1.7">
+                <div style="margin-bottom:8px"><strong style="color:var(--navy)">Evidência:</strong> <span style="color:var(--text-sec)">${finding.evidence || 'Não verificado'}</span></div>
+                <div style="margin-bottom:8px"><strong style="color:#C0392B">Risco:</strong> <span style="color:#C0392B">${finding.risk || 'N/A'}</span></div>
+                <div><strong style="color:#2D5A3D">Ação recomendada:</strong> <span style="color:#2D5A3D">${finding.action || 'N/A'}</span></div>
+              </div>
+            </div>`;
+          }).join('')}
 
-          ${r.opportunities?.length ? `
+          ${comp.competitors?.length ? `
           <div class="card" style="margin-bottom:20px">
             <div class="section-header">
-              <div class="icon-circle" style="background:#FFF8E1">
-                <svg viewBox="0 0 24 24" style="stroke:#F39C12"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
-              </div>
-              <span class="title" style="color:#F39C12">Oportunidades</span>
+              <div class="icon-circle">${icons.target}</div>
+              <span class="title">Concorrência Local</span>
             </div>
-            ${r.opportunities.map(o => `<div class="list-item"><div class="bullet" style="background:#F39C12"></div><span class="text">${o}</span></div>`).join('')}
+            <div style="font-size:12px;line-height:1.7">
+              <div style="margin-bottom:8px"><strong>Concorrentes:</strong> ${comp.competitors.join(', ')}</div>
+              ${comp.whatTheyDoBetter ? `<div style="margin-bottom:8px"><strong>O que fazem melhor:</strong> ${comp.whatTheyDoBetter}</div>` : ''}
+              ${comp.identifiedGap ? `<div><strong>Gap identificado:</strong> ${comp.identifiedGap}</div>` : ''}
+            </div>
           </div>` : ''}
 
-          ${r.aiRecommendations?.length ? `
+          ${r.paidAds ? `
           <div class="card" style="margin-bottom:20px">
             <div class="section-header">
               <div class="icon-circle" style="background:rgba(61,53,104,.08)">${icons.sparkle}</div>
-              <span class="title">Recomendações de IA</span>
+              <span class="title">Publicidade Paga</span>
             </div>
-            ${r.aiRecommendations.map(rec => `
-              <div class="rec-card">
-                <div class="rec-title">${rec.title}</div>
-                <div class="rec-desc">${rec.description}</div>
-                ${rec.expectedROI ? `<div class="rec-cost">Retorno esperado: ${rec.expectedROI}</div>` : ''}
-                <div class="tags">
-                  <span class="tag">Impacto: ${rec.impact}</span>
-                  <span class="tag">Implantação: ${rec.implementation}</span>
-                </div>
-              </div>
-            `).join('')}
+            <div style="font-size:12px;line-height:1.7">
+              <div style="margin-bottom:4px"><strong>Status:</strong> ${r.paidAds.status}</div>
+              ${r.paidAds.evidence ? `<div>${r.paidAds.evidence}</div>` : ''}
+            </div>
           </div>` : ''}
 
-          ${r.competitorInsights ? `
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-header">
-              <div class="icon-circle">
-                <svg viewBox="0 0 24 24" style="stroke:var(--navy)"><path d="M6 9l6 6 6-6"/></svg>
-              </div>
-              <span class="title">Análise Competitiva</span>
-            </div>
-            <p style="font-size:13px;color:var(--navy);line-height:1.6">${r.competitorInsights}</p>
-          </div>` : ''}
-
-          ${r.priorityActions?.length ? `
+          ${(plan.now?.length || plan.shortTerm?.length || plan.strategic?.length) ? `
           <div class="card" style="margin-bottom:20px">
             <div class="section-header">
               <div class="icon-circle" style="background:rgba(61,53,104,.08)">${icons.target}</div>
-              <span class="title">Ações Prioritárias (30 dias)</span>
+              <span class="title">Plano de Ação Priorizado</span>
             </div>
-            ${r.priorityActions.map((a, i) => `<div class="list-item"><div class="bullet" style="background:var(--navy);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;min-width:22px">${i+1}</div><span class="text">${a}</span></div>`).join('')}
+            ${plan.now?.length ? `
+              <div style="margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:#2D5A3D;margin-bottom:6px">⚡ Resolver agora</div>
+                ${plan.now.map((a, i) => `<div class="list-item"><div class="bullet" style="background:#2D5A3D"></div><span class="text">${a}</span></div>`).join('')}
+              </div>` : ''}
+            ${plan.shortTerm?.length ? `
+              <div style="margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:#F39C12;margin-bottom:6px">📅 Médio prazo (1-3 meses)</div>
+                ${plan.shortTerm.map((a, i) => `<div class="list-item"><div class="bullet" style="background:#F39C12"></div><span class="text">${a}</span></div>`).join('')}
+              </div>` : ''}
+            ${plan.strategic?.length ? `
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:6px">🎯 Estratégico</div>
+                ${plan.strategic.map((a, i) => `<div class="list-item"><div class="bullet" style="background:var(--navy)"></div><span class="text">${a}</span></div>`).join('')}
+              </div>` : ''}
+          </div>` : ''}
+
+          ${r.whereWeCanHelp ? `
+          <div class="card" style="margin-bottom:20px;border:2px solid var(--navy)">
+            <div class="section-header">
+              <div class="icon-circle" style="background:var(--navy)">${icons.check}</div>
+              <span class="title" style="color:var(--navy)">Onde a BACY pode ajudar</span>
+            </div>
+            <p style="font-size:13px;color:var(--navy);line-height:1.6">${r.whereWeCanHelp}</p>
           </div>` : ''}
 
           <div style="text-align:center;padding:20px 0">
             <button class="btn-primary btn-full" id="btnDownload">${icons.download} Baixar Relatório Completo (PDF)</button>
             <p style="font-size:11px;color:var(--text-sec);margin-top:10px">Preencha seu nome e telefone para gerar o PDF</p>
           </div>
-          <p style="text-align:center;font-size:11px;color:var(--text-sec);margin-top:16px">Análise gerada por IA especializada — Agência Global</p>
+          <p style="text-align:center;font-size:11px;color:var(--text-sec);margin-top:16px">Auditoria gerada por IA — BACY Agência</p>
         </div>
       `;
       document.getElementById('btnDownload').addEventListener('click', () => { state.showPopup = true; render(); });
     }
 
-    function renderCategoryBars(scores) {
+    function renderBACYCategoryBars(scores) {
       const cats = [
-        { label: 'Presença Digital', val: scores?.digitalPresence || 50, icon: '🌐' },
-        { label: 'Engajamento', val: scores?.engagement || 50, icon: '💬' },
-        { label: 'SEO & Site', val: scores?.seo || 50, icon: '🔍' },
+        { label: 'Site', val: scores?.site || 50, icon: '🌐' },
+        { label: 'SEO / Google', val: scores?.seo || 50, icon: '🔍' },
+        { label: 'Google Meu Negócio', val: scores?.gmb || 50, icon: '📍' },
+        { label: 'Redes Sociais', val: scores?.socialMedia || 50, icon: '📱' },
         { label: 'Reputação', val: scores?.reputation || 50, icon: '⭐' },
-        { label: 'Operacional', val: scores?.operational || 50, icon: '⚙️' },
       ];
       return cats.map(c => `
         <div class="cat-bar">
