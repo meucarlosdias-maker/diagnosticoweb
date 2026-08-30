@@ -518,12 +518,10 @@
       const r = d.result || {};
       const score = r.overallScore || 0;
       const cats = r.categoryScores || {};
-      const actions = r.priorityActions || [];
-      const strengths = r.strengths || [];
-      const weaknesses = r.weaknesses || [];
-
-      // Encontrar template matching
-      const matchTemplate = findMatchingTemplate(actions);
+      const f = r.findings || {};
+      const plan = r.actionPlan || {};
+      const comp = r.competitorAnalysis || {};
+      const paid = r.paidAds || {};
 
       document.getElementById('viewDetail').innerHTML = `
         <button class="back-btn" onclick="goBack()">← Voltar</button>
@@ -531,7 +529,7 @@
         <div class="detail-header">
           <div>
             <h2>${d.companyName}</h2>
-            <p>${d.segment} — Lead: ${d.formattedData?.name || '—'} — Tel: ${d.formattedData?.phone || '—'}</p>
+            <p>${d.segment} — ${d.formData?.city || ''} — Lead: ${d.formattedData?.name || '—'} — Tel: ${d.formattedData?.phone || '—'}</p>
           </div>
           <div style="text-align:right">
             <div style="font-size:32px;font-weight:800;color:var(--navy)">${score}<span style="font-size:14px;color:var(--text-sec)">/100</span></div>
@@ -539,95 +537,105 @@
           </div>
         </div>
 
-        <!-- Scores -->
-        <div class="card">
-          <div class="card-header"><span class="card-title">Scores por Categoria</span></div>
-          ${renderScoreBar('Presença Digital', cats.digitalPresence)}
-          ${renderScoreBar('Engajamento', cats.engagement)}
-          ${renderScoreBar('SEO & Site', cats.seo)}
-          ${renderScoreBar('Reputação', cats.reputation)}
-          ${renderScoreBar('Operacional', cats.operational)}
+        <!-- ========== RELATÓRIO DE AUDITORIA BACY ========== -->
+
+        <!-- Resumo Executivo -->
+        <div class="card" style="border-left:4px solid var(--navy)">
+          <div class="card-header"><span class="card-title">Resumo Executivo</span></div>
+          <p style="font-size:13px;line-height:1.7;color:var(--text)">${r.expertSummary || 'Não disponível'}</p>
         </div>
 
-        <!-- Info -->
+        <!-- Scores por Categoria -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Scores por Categoria</span></div>
+          ${renderScoreBar('Site', cats.site)}
+          ${renderScoreBar('SEO / Google', cats.seo)}
+          ${renderScoreBar('Google Meu Negócio', cats.gmb)}
+          ${renderScoreBar('Redes Sociais', cats.socialMedia)}
+          ${renderScoreBar('Reputação', cats.reputation)}
+        </div>
+
+        <!-- Dados do Lead -->
         <div class="card">
           <div class="card-header"><span class="card-title">Dados do Lead</span></div>
           <div class="info-grid">
             <div class="info-item"><div class="label">Empresa</div><div class="value">${d.companyName}</div></div>
             <div class="info-item"><div class="label">Segmento</div><div class="value">${d.segment}</div></div>
+            <div class="info-item"><div class="label">Cidade</div><div class="value">${d.formData?.city || '—'}</div></div>
             <div class="info-item"><div class="label">Nome</div><div class="value">${d.formattedData?.name || '—'}</div></div>
             <div class="info-item"><div class="label">Telefone</div><div class="value">${d.formattedData?.phone || '—'}</div></div>
-            <div class="info-item"><div class="label">Instagram</div><div class="value" style="font-size:11px">${d.formData?.instagramUrl || '—'}</div></div>
-            <div class="info-item"><div class="label">Website</div><div class="value" style="font-size:11px">${d.formData?.websiteUrl || '—'}</div></div>
+            <div class="info-item"><div class="label">Instagram</div><div class="value" style="font-size:11px">${d.formData?.hasInstagram === false ? 'Não possui' : (d.formData?.instagramUrl || '—')}</div></div>
+            <div class="info-item"><div class="label">Website</div><div class="value" style="font-size:11px">${d.formData?.hasWebsite === false ? 'Não possui' : (d.formData?.websiteUrl || '—')}</div></div>
           </div>
         </div>
 
-        <!-- Pontos Fortes / Fracos -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="card">
-            <div class="card-header"><span class="card-title" style="color:var(--green)">Pontos Fortes</span></div>
-            ${strengths.length ? strengths.map(s => `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--input-bg)">✓ ${s}</div>`).join('') : '<p style="font-size:12px;color:var(--text-sec)">Nenhum identificado</p>'}
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title" style="color:var(--red)">Problemas</span></div>
-            ${weaknesses.length ? weaknesses.map(w => `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid var(--input-bg)">✗ ${w}</div>`).join('') : '<p style="font-size:12px;color:var(--text-sec)">Nenhum identificado</p>'}
-          </div>
-        </div>
+        <!-- Achados por Categoria -->
+        ${renderFindingCard('Site', f.site, '🌐')}
+        ${renderFindingCard('SEO / Google', f.seo, '🔍')}
+        ${renderFindingCard('Google Meu Negócio', f.gmb, '📍')}
+        ${renderFindingCard('Redes Sociais / Instagram', f.socialMedia, '📱')}
+        ${renderFindingCard('Reputação Online', f.reputation, '⭐')}
 
-        <!-- Ações Prioritárias -->
-        <div class="card">
-          <div class="card-header"><span class="card-title">Ações Prioritárias (30 dias)</span></div>
-          ${actions.length ? actions.map((a, i) => `
-            <div class="action-item">
-              <div class="title">${i+1}. ${a.title}</div>
-              <div class="desc">${a.description}</div>
-              <div class="action-meta">
-                <span class="badge badge-${a.impact === 'alto' ? 'pending' : a.impact === 'medio' ? 'viewed' : 'sent'}">${a.impact} impacto</span>
-                <span class="badge" style="background:var(--input-bg);color:var(--navy)">${a.implementation}</span>
-                ${a.expectedROI ? `<span class="badge" style="background:#D4EDDA;color:var(--green)">ROI: ${a.expectedROI}</span>` : ''}
-              </div>
+        <!-- Concorrência -->
+        ${comp.competitors?.length ? `
+        <div class="card" style="border-left:4px solid var(--orange)">
+          <div class="card-header"><span class="card-title" style="color:var(--orange)">Análise de Concorrência</span></div>
+          <div style="margin-bottom:10px">
+            <span style="font-size:11px;font-weight:600;color:var(--navy)">Concorrentes identificados:</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+              ${comp.competitors.map(c => `<span class="badge badge-pending">${c}</span>`).join('')}
             </div>
-          `).join('') : '<p style="font-size:12px;color:var(--text-sec)">Nenhuma ação identificada</p>'}
+          </div>
+          ${comp.whatTheyDoBetter ? `<div style="font-size:12px;margin-bottom:8px"><strong>O que fazem melhor:</strong> ${comp.whatTheyDoBetter}</div>` : ''}
+          ${comp.identifiedGap ? `<div style="font-size:12px"><strong>Gap competitivo:</strong> ${comp.identifiedGap}</div>` : ''}
+        </div>` : ''}
+
+        <!-- Publicidade Paga -->
+        ${paid.status ? `
+        <div class="card" style="border-left:4px solid var(--lavanda)">
+          <div class="card-header"><span class="card-title">Publicidade Paga</span></div>
+          <div style="font-size:12px;margin-bottom:6px"><strong>Status:</strong> ${paid.status}</div>
+          ${paid.evidence ? `<div style="font-size:12px"><strong>Evidência:</strong> ${paid.evidence}</div>` : ''}
+        </div>` : ''}
+
+        <!-- Plano de Ação -->
+        <div class="card" style="border-left:4px solid var(--navy)">
+          <div class="card-header"><span class="card-title">Plano de Ação</span></div>
+          ${plan.now?.length ? `
+          <div style="margin-bottom:12px">
+            <span style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase">Resolver Agora</span>
+            ${plan.now.map(a => `<div style="font-size:12px;padding:4px 0;color:var(--text)">• ${a}</div>`).join('')}
+          </div>` : ''}
+          ${plan.shortTerm?.length ? `
+          <div style="margin-bottom:12px">
+            <span style="font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase">Médio Prazo (1-3 meses)</span>
+            ${plan.shortTerm.map(a => `<div style="font-size:12px;padding:4px 0;color:var(--text)">• ${a}</div>`).join('')}
+          </div>` : ''}
+          ${plan.strategic?.length ? `
+          <div>
+            <span style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase">Estratégico (3-6 meses)</span>
+            ${plan.strategic.map(a => `<div style="font-size:12px;padding:4px 0;color:var(--text)">• ${a}</div>`).join('')}
+          </div>` : ''}
         </div>
 
-        <!-- Template Sugerido -->
-        <div class="card">
+        <!-- Onde a BACY pode ajudar -->
+        ${r.whereWeCanHelp ? `
+        <div class="card" style="background:var(--lavanda);border:none">
+          <div class="card-header"><span class="card-title" style="color:var(--white)">Onde a BACY Pode Ajudar</span></div>
+          <p style="font-size:13px;line-height:1.6;color:var(--white)">${r.whereWeCanHelp}</p>
+        </div>` : ''}
+
+        <!-- ========== DIVISÓRIA ========== -->
+        <div style="border-top:3px solid var(--navy);margin:8px 0"></div>
+
+        <!-- ========== ESTRATÉGIA DE PROSPECÇÃO ========== -->
+        <div class="card" style="border-left:4px solid var(--green)">
           <div class="card-header">
-            <span class="card-title">Template de Follow-up Sugerido</span>
-          </div>
-          ${matchTemplate ? `
-            <div style="margin-bottom:12px">
-              <span class="badge badge-viewed">${matchTemplate.name}</span>
-              <span style="font-size:11px;color:var(--text-sec);margin-left:8px">Baseado em: "${matchTemplate.triggerKeyword}"</span>
-            </div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">ASSUNTO DO E-MAIL</label>
-              <div class="template-preview" style="padding:10px 14px;font-weight:600">${fillTemplate(matchTemplate.emailSubject, d, actions[0])}</div>
-            </div>
-            <div style="margin-bottom:12px">
-              <label style="font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">CORPO DO E-MAIL</label>
-              <div class="template-preview">${fillTemplate(matchTemplate.emailBody, d, actions[0])}</div>
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">WHATSAPP</label>
-              <div class="template-preview">${fillTemplate(matchTemplate.whatsappTemplate, d, actions[0])}</div>
-            </div>
-            <div class="btn-group" style="margin-top:16px">
-              <button class="btn btn-primary" onclick="copyEmail()">Copiar E-mail</button>
-              <button class="btn btn-success" onclick="copyWhatsApp()">Copiar WhatsApp</button>
-              <button class="btn btn-ghost" onclick="markSent('${d._id}')">Marcar como Enviado</button>
-            </div>
-          ` : '<p style="font-size:12px;color:var(--text-sec)">Nenhum template encontrado para estas ações</p>'}
-        </div>
-
-        <!-- Estratégia de Prospecção -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Estratégia de Prospecção BACY</span>
+            <span class="card-title" style="color:var(--green)">Estratégia de Prospecção BACY</span>
             <button class="btn btn-sm btn-primary" id="btnProspect" onclick="generateProspection('${d._id}')">Gerar Estratégia</button>
           </div>
           <div id="prospectResult">
-            <p style="font-size:12px;color:var(--text-sec)">Clique em "Gerar Estratégia" para criar um plano de prospecção baseado nesta auditoria.</p>
+            <p style="font-size:12px;color:var(--text-sec)">Clique em "Gerar Estratégia" para criar um plano comercial completo baseado nesta auditoria.</p>
           </div>
         </div>
 
@@ -636,6 +644,24 @@
           <div class="card-header"><span class="card-title">Notas Internas</span></div>
           <textarea id="diagNotes" placeholder="Adicione notas sobre este lead...">${d.notes || ''}</textarea>
           <button class="btn btn-sm btn-ghost" style="margin-top:8px" onclick="saveNotes('${d._id}')">Salvar Notas</button>
+        </div>
+      `;
+    }
+
+    function renderFindingCard(category, finding, icon) {
+      if (!finding) return '';
+      const statusColor = finding.status === 'Bom' ? 'var(--green)' : finding.status === 'Crítico' ? 'var(--red)' : finding.status === 'Ruim' ? 'var(--orange)' : 'var(--text-sec)';
+      return `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">${icon} ${category}</span>
+            <span class="badge" style="background:${statusColor};color:var(--white)">${finding.status || 'N/A'}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div><span style="font-size:11px;font-weight:600;color:var(--navy)">Evidência:</span> <span style="font-size:12px;color:var(--text)">${finding.evidence || '—'}</span></div>
+            <div><span style="font-size:11px;font-weight:600;color:var(--red)">Risco:</span> <span style="font-size:12px;color:var(--text)">${finding.risk || '—'}</span></div>
+            <div><span style="font-size:11px;font-weight:600;color:var(--green)">Ação Recomendada:</span> <span style="font-size:12px;color:var(--text)">${finding.action || '—'}</span></div>
+          </div>
         </div>
       `;
     }
