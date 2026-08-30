@@ -112,27 +112,8 @@ export async function analyzeWithAI(formData) {
     websiteData = await fetchWebsiteContent(websiteUrl);
   }
 
-  // Step 2: Fetch GMB data via Google Places API (non-blocking, 8s timeout)
-  let gmbData = null;
-  if (hasGMB !== false && city) {
-    try {
-      const controller = new AbortController();
-      const gmbTimeout = setTimeout(() => controller.abort(), 8000);
-      const gmbResp = await fetch(`${API_BASE}/api/gmb-lookup?company=${encodeURIComponent(companyName)}&city=${encodeURIComponent(city)}&segment=${encodeURIComponent(segment || '')}`, { signal: controller.signal });
-      clearTimeout(gmbTimeout);
-      if (gmbResp.ok) {
-        const gmbJson = await gmbResp.json();
-        if (gmbJson.status !== 'REQUEST_DENIED' && gmbJson.status !== 'ERROR') {
-          gmbData = gmbJson;
-        }
-      }
-    } catch (e) {
-      console.error('GMB lookup failed (continuing without):', e.message);
-    }
-  }
-
-  // Step 3: Build and send BACY prompt
-  const bacyPrompt = buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB, websiteData, gmbData);
+  // Step 2: Build and send BACY prompt
+  const bacyPrompt = buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB, websiteData);
 
   const analysisResp = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
@@ -302,7 +283,7 @@ Se cidade e ramo não vierem, tente inferir a partir do site/Instagram nos prime
 /**
  * Build the BACY investigation prompt
  */
-function buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB, websiteData, gmbData) {
+function buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, hasGMB, websiteData) {
   const hasSite = hasWebsite !== false && websiteUrl;
   const hasInsta = hasInstagram !== false && instagramUrl;
   const gmbInformed = hasGMB !== null && hasGMB !== undefined;
@@ -338,28 +319,6 @@ DADOS EXTRAÍDOS DO SITE (Reconhecimento Inicial):
 - Possui telefone: ${websiteData.hasPhone ? 'Sim' : 'Não'}
 - Texto do corpo (resumo): ${websiteData.bodyText.slice(0, 1500)}
 - Imagens: ${websiteData.images.length} imagens, ${websiteData.images.filter(i => i.alt).length} com alt text`;
-  }
-
-  if (gmbData && gmbData.candidates && gmbData.candidates.length > 0) {
-    const gmb = gmbData.candidates[0];
-    prompt += `
-
-DADOS DO GOOGLE MEU NEGÓCIO (via Google Places API):
-- Nome no Google: ${gmb.name || 'N/A'}
-- Endereço: ${gmb.formatted_address || 'N/A'}
-- Telefone: ${gmb.formatted_phone_number || 'N/A'}
-- Website: ${gmb.website || 'N/A'}
-- Nota média: ${gmb.rating || 'N/A'} (${gmb.user_rating_total || 0} avaliações)
-- Tipos/Categorias: ${gmb.types?.join(', ') || 'N/A'}
-- Horário: ${gmb.opening_hours?.open_now !== undefined ? (gmb.opening_hours.open_now ? 'Aberto agora' : 'Fechado agora') : 'N/A'}
-- URL Google Maps: ${gmb.url || 'N/A'}
-- Fotos disponíveis: ${gmb.photos?.length || 0} fotos
-- Avaliações recentes: ${gmb.reviews?.slice(0, 3).map(r => `${r.author_name} (${r.rating}★): "${r.text?.slice(0, 100) || ''}"`).join(' | ') || 'Nenhuma'}`;
-  } else if (gmbData && gmbData.status === 'ZERO_RESULTS') {
-    prompt += `
-
-DADOS DO GOOGLE MEU NEGÓCIO:
-- Nenhum perfil GMB encontrado para "${companyName}" em "${city}". Registre como achado CRÍTICO.`;
   }
 
   prompt += `

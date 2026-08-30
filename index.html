@@ -527,17 +527,20 @@
           companyName: state.formData.companyName,
           segment: state.formData.segment,
           formData: { ...state.formData },
-          result: { ...state.result },
-          formattedData: { name, phone },
+          result: state.result ? { ...state.result } : null,
+          formattedData: { name: name || state.leadName || '', phone: phone || state.leadPhone || '' },
           pdfGenerated: true
         };
-        await fetch('/api/diagnostics', {
+        console.log('[SAVE] Sending diagnostic...', diagnosticData.companyName);
+        const resp = await fetch('/api/diagnostics', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(diagnosticData)
         });
+        const data = await resp.json();
+        console.log('[SAVE] Response:', resp.status, data);
       } catch (e) {
-        console.error('Erro ao salvar diagnóstico:', e);
+        console.error('[SAVE] ERRO ao salvar diagnóstico:', e);
       }
     }
 
@@ -1013,23 +1016,28 @@
         btn.disabled = true;
         const schedName = document.getElementById('schedName').value.trim();
         const schedPhone = document.getElementById('schedPhone').value.trim();
+        const payload = {
+          companyName: state.formData.companyName,
+          segment: state.formData.segment,
+          city: state.formData.city,
+          date: selectedDate,
+          hour: selectedHour,
+          name: schedName,
+          phone: schedPhone,
+          message: document.getElementById('schedMsg').value.trim(),
+          score: state.result?.overallScore || 0
+        };
+        console.log('[SCHED] Sending appointment...', payload);
         try {
           const resp = await fetch('/api/appointments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              companyName: state.formData.companyName,
-              segment: state.formData.segment,
-              city: state.formData.city,
-              date: selectedDate,
-              hour: selectedHour,
-              name: schedName,
-              phone: schedPhone,
-              message: document.getElementById('schedMsg').value.trim(),
-              score: state.result?.overallScore || 0
-            })
+            body: JSON.stringify(payload)
           });
-          if (resp.ok) {
+          console.log('[SCHED] Response status:', resp.status);
+          const data = await resp.json();
+          console.log('[SCHED] Response data:', data);
+          if (resp.ok && data.success) {
             state.leadName = schedName;
             state.leadPhone = schedPhone;
             await saveDiagnosticToBackend(schedName, schedPhone);
@@ -1037,10 +1045,10 @@
             state.showThankYou = true;
             render();
           } else {
-            const err = await resp.json().catch(() => ({ error: 'Erro desconhecido' }));
-            throw new Error(err.error || 'Erro ao agendar');
+            throw new Error(data.error || 'Erro ao agendar');
           }
         } catch (err) {
+          console.error('[SCHED] ERRO:', err);
           alert('Erro ao agendar: ' + err.message);
           btn.textContent = 'Confirmar Agendamento';
           btn.disabled = false;
