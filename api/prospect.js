@@ -1,4 +1,5 @@
 const AI_API_KEY = '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';
+const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,10 +9,12 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  try {
-    const { auditResult, formData } = req.body;
+  const { auditResult, formData } = req.body;
+  if (!auditResult || !formData) {
+    return res.status(400).json({ error: 'Missing auditResult or formData' });
+  }
 
-    const PROSPECTION_PROMPT = `Você é o **Estrategista Comercial da BACY Agência**. Todo o seu atendimento e comunicação deve ser feito em Português do Brasil.
+  const PROSPECTION_PROMPT = `Você é o **Estrategista Comercial da BACY Agência**. Todo o seu atendimento e comunicação deve ser feito em Português do Brasil.
 
 ## Catálogo de soluções da BACY:
 1. **Leadly** — atendimento via WhatsApp com IA, automação de respostas, qualificação de leads, agendamento, follow-up automático, CRM básico
@@ -44,11 +47,11 @@ module.exports = async function handler(req, res) {
   "newServiceOpportunities": [{ "realPain": "...", "whatItWouldDo": "...", "viability": "...", "scalable": "...", "name": "...", "priceRange": "..." }]
 }`;
 
-    const f = auditResult.findings || {};
-    const plan = auditResult.actionPlan || {};
-    const comp = auditResult.competitorAnalysis || {};
+  const f = auditResult.findings || {};
+  const plan = auditResult.actionPlan || {};
+  const comp = auditResult.competitorAnalysis || {};
 
-    const userPrompt = `Gere uma estratégia de prospecção completa baseada na auditoria abaixo.
+  const userPrompt = `Gere uma estratégia de prospecção completa baseada na auditoria abaixo.
 
 DADOS DA EMPRESA:
 - Nome: ${formData.companyName}
@@ -74,34 +77,66 @@ ONDE A BACY AJUDA: ${auditResult.whereWeCanHelp || 'Não disponível'}
 
 Gere a estratégia seguindo o formato JSON do sistema.`;
 
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'moonshotai/kimi-k3',
-        messages: [
-          { role: 'system', content: PROSPECTION_PROMPT },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.4,
-        max_tokens: 10000
-      })
-    });
+  const MAX_RETRIES = 2;
+  const TIMEOUT_MS = 250000;
 
-    const data = await response.json();
-    let content = data.choices[0]?.message?.content || data.choices[0]?.message?.reasoning_content || '{}';
-    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      return res.status(200).json(JSON.parse(content));
-    } catch (e) {
-      return res.status(200).json({ rawText: content });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+      console.log(`[PROSPECT] Attempt ${attempt}/${MAX_RETRIES}`);
+
+      const response = await fetch(NVIDIA_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'moonshotai/kimi-k3',
+          messages: [
+            { role: 'system', content: PROSPECTION_PROMPT },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.4,
+          max_tokens: 10000
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timer);
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        console.error(`[PROSPECT] NVIDIA error ${response.status}: ${errText.slice(0, 200)}`);
+        if (response.status === 429 && attempt < MAX_RETRIES) {
+          await new Promise(r => setTimeout(r, 3000));
+          continue;
+        }
+        return res.status(response.status).json({ error: `NVIDIA API error: ${response.status}` });
+      }
+
+      const data = await response.json();
+      let content = data.choices[0]?.message?.content || data.choices[0]?.message?.reasoning_content || '{}';
+      content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+      console.log(`[PROSPECT] Success, tokens: ${data.usage?.total_tokens || '?'}`);
+
+      try {
+        return res.status(200).json(JSON.parse(content));
+      } catch (e) {
+        return res.status(200).json({ rawText: content });
+      }
+    } catch (err) {
+      console.error(`[PROSPECT] Attempt ${attempt} error:`, err.message);
+      if (err.name === 'AbortError' && attempt < MAX_RETRIES) {
+        console.log(`[PROSPECT] Timeout, retrying...`);
+        continue;
+      }
+      return res.status(500).json({ error: err.message });
     }
-  } catch (err) {
-    console.error('[PROSPECT] Error:', err.message);
-    return res.status(500).json({ error: err.message });
   }
+
+  return res.status(504).json({ error: 'AI API timeout after retries' });
 };
