@@ -793,7 +793,13 @@
           <p style="text-align:center;font-size:11px;color:var(--text-sec);margin-top:16px">Auditoria gerada por IA — BACY Agência</p>
         </div>
       `;
-      document.getElementById('btnSchedule').addEventListener('click', () => { state.showScheduler = true; render(); });
+      document.getElementById('btnSchedule').addEventListener('click', async () => {
+        if (state.leadName && state.leadPhone) {
+          await saveDiagnosticToBackend(state.leadName, state.leadPhone);
+        }
+        state.showScheduler = true;
+        render();
+      });
       document.getElementById('btnDownload').addEventListener('click', () => { state.showPopup = true; render(); });
     }
 
@@ -1005,6 +1011,8 @@
         const btn = document.getElementById('btnConfirmSched');
         btn.textContent = 'Agendando...';
         btn.disabled = true;
+        const schedName = document.getElementById('schedName').value.trim();
+        const schedPhone = document.getElementById('schedPhone').value.trim();
         try {
           const resp = await fetch('/api/appointments', {
             method: 'POST',
@@ -1015,18 +1023,22 @@
               city: state.formData.city,
               date: selectedDate,
               hour: selectedHour,
-              name: document.getElementById('schedName').value.trim(),
-              phone: document.getElementById('schedPhone').value.trim(),
+              name: schedName,
+              phone: schedPhone,
               message: document.getElementById('schedMsg').value.trim(),
               score: state.result?.overallScore || 0
             })
           });
           if (resp.ok) {
+            state.leadName = schedName;
+            state.leadPhone = schedPhone;
+            await saveDiagnosticToBackend(schedName, schedPhone);
             state.showScheduler = false;
             state.showThankYou = true;
             render();
           } else {
-            throw new Error('Erro ao agendar');
+            const err = await resp.json().catch(() => ({ error: 'Erro desconhecido' }));
+            throw new Error(err.error || 'Erro ao agendar');
           }
         } catch (err) {
           alert('Erro ao agendar: ' + err.message);
@@ -1203,6 +1215,8 @@
         state.showPopup = true;
         state.isAnalyzing = false;
         render();
+        // Auto-save diagnostic even before popup
+        saveDiagnosticToBackend('', '').catch(e => console.error('Auto-save before popup:', e));
       } catch (err) {
         clearInterval(phaseInterval);
         console.error('Analysis error:', err);

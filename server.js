@@ -375,7 +375,7 @@ app.get('/api/gmb-lookup', checkAuth, async (req, res) => {
       '-CompanyName', company,
       '-City', city,
       '-Segment', segment || ''
-    ], { encoding: 'utf8', timeout: 60000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
+    ], { encoding: 'utf8', timeout: 15000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
 
     try {
       res.json(JSON.parse(result.trim()));
