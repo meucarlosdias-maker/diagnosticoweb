@@ -620,6 +620,17 @@
           ` : '<p style="font-size:12px;color:var(--text-sec)">Nenhum template encontrado para estas ações</p>'}
         </div>
 
+        <!-- Estratégia de Prospecção -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Estratégia de Prospecção BACY</span>
+            <button class="btn btn-sm btn-primary" id="btnProspect" onclick="generateProspection('${d._id}')">Gerar Estratégia</button>
+          </div>
+          <div id="prospectResult">
+            <p style="font-size:12px;color:var(--text-sec)">Clique em "Gerar Estratégia" para criar um plano de prospecção baseado nesta auditoria.</p>
+          </div>
+        </div>
+
         <!-- Notas -->
         <div class="card">
           <div class="card-header"><span class="card-title">Notas Internas</span></div>
@@ -799,6 +810,134 @@
           showToast('Erro ao excluir');
         }
       });
+    }
+
+    // ========== PROSPECTION ==========
+    async function generateProspection(id) {
+      const btn = document.getElementById('btnProspect');
+      const container = document.getElementById('prospectResult');
+      btn.disabled = true;
+      btn.textContent = 'Gerando...';
+      container.innerHTML = '<p style="color:var(--lavanda);font-weight:600">Analisando auditoria e gerando estratégia de prospecção...</p>';
+
+      try {
+        const d = state.diagnostics.find(x => x._id === id);
+        if (!d || !d.result) {
+          container.innerHTML = '<p style="color:var(--red)">Diagnóstico sem resultado de auditoria.</p>';
+          btn.disabled = false;
+          btn.textContent = 'Gerar Estratégia';
+          return;
+        }
+
+        const resp = await fetch('/api/prospect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            auditResult: d.result,
+            formData: d.formData
+          })
+        });
+
+        if (!resp.ok) throw new Error('Erro na API');
+        const strategy = await resp.json();
+
+        if (strategy.rawText) {
+          container.innerHTML = `<div style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--text)">${strategy.rawText}</div>`;
+        } else {
+          container.innerHTML = renderProspection(strategy);
+        }
+
+        btn.textContent = 'Estratégia Gerada';
+      } catch (err) {
+        container.innerHTML = `<p style="color:var(--red)">Erro ao gerar estratégia: ${err.message}</p>`;
+        btn.disabled = false;
+        btn.textContent = 'Gerar Estratégia';
+      }
+    }
+
+    function renderProspection(s) {
+      let html = '';
+
+      if (s.diagnosis) {
+        html += `<div class="stat-card" style="margin-bottom:12px"><div class="stat-label">Diagnóstico</div><div style="font-size:13px;color:var(--text);line-height:1.5;margin-top:6px">${s.diagnosis}</div></div>`;
+      }
+
+      if (s.primaryPain) {
+        html += `<div class="stat-card" style="margin-bottom:12px;border-left:3px solid var(--red)"><div class="stat-label" style="color:var(--red)">Dor Primária</div>
+          <div style="font-size:13px;color:var(--text);margin-top:6px"><strong>Achado:</strong> ${s.primaryPain.finding}</div>
+          <div style="font-size:13px;color:var(--text)"><strong>Impacto:</strong> ${s.primaryPain.impact}</div>
+          <div style="font-size:13px;color:var(--lavanda);font-weight:600"><strong>Solução:</strong> ${s.primaryPain.solution}</div>
+        </div>`;
+      }
+
+      if (s.secondaryPains && s.secondaryPains.length > 0) {
+        html += `<div class="stat-card" style="margin-bottom:12px"><div class="stat-label">Dores Secundárias</div>`;
+        s.secondaryPains.forEach(p => {
+          html += `<div style="font-size:13px;color:var(--text);margin-top:8px;padding-left:12px;border-left:2px solid var(--border)">
+            <div><strong>Achado:</strong> ${p.finding}</div>
+            <div><strong>Impacto:</strong> ${p.impact}</div>
+            <div style="color:var(--lavanda);font-weight:600"><strong>Solução:</strong> ${p.solution}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+
+      if (s.openingHook) {
+        html += `<div class="stat-card" style="margin-bottom:12px;background:var(--lavanda);color:var(--white)">
+          <div class="stat-label" style="color:var(--white)">Gancho de Abertura</div>
+          <div style="font-size:15px;font-weight:700;margin-top:8px;font-style:italic">"${s.openingHook}"</div>
+        </div>`;
+      }
+
+      if (s.approachChannel || s.approachTone) {
+        html += `<div class="stat-card" style="margin-bottom:12px"><div class="stat-label">Canal e Tom de Abordagem</div>
+          <div style="font-size:13px;color:var(--text);margin-top:6px"><strong>Canal:</strong> ${s.approachChannel || '-'}</div>
+          <div style="font-size:13px;color:var(--text)"><strong>Tom:</strong> ${s.approachTone || '-'}</div>
+          <div style="font-size:13px;color:var(--text)"><strong>Justificativa:</strong> ${s.approachJustification || '-'}</div>
+        </div>`;
+      }
+
+      if (s.commercialOffer) {
+        const o = s.commercialOffer;
+        html += `<div class="stat-card" style="margin-bottom:12px;border-left:3px solid var(--green)"><div class="stat-label" style="color:var(--green)">Oferta Comercial</div>
+          <div style="font-size:13px;color:var(--text);margin-top:6px"><strong>Entrada:</strong> ${o.entrySolution}</div>
+          <div style="font-size:13px;color:var(--text)"><strong>Upsell:</strong> ${o.upsellNatural}</div>
+          <div style="font-size:13px;color:var(--text)"><strong>Faixa:</strong> ${o.packageRange}</div>
+        </div>`;
+      }
+
+      if (s.objections && s.objections.length > 0) {
+        html += `<div class="stat-card" style="margin-bottom:12px"><div class="stat-label">Objeções Prováveis</div>`;
+        s.objections.forEach(o => {
+          html += `<div style="font-size:13px;color:var(--text);margin-top:8px;padding-left:12px;border-left:2px solid var(--border)">
+            <div><strong>Objeção:</strong> ${o.objection}</div>
+            <div style="color:var(--green)"><strong>Resposta:</strong> ${o.response}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+
+      if (s.firstMessageScript) {
+        html += `<div class="stat-card" style="margin-bottom:12px;background:var(--bg-dark);color:var(--white)">
+          <div class="stat-label" style="color:var(--white)">Roteiro de Primeira Mensagem</div>
+          <div style="font-size:13px;margin-top:8px;white-space:pre-wrap;line-height:1.6">${s.firstMessageScript}</div>
+        </div>`;
+      }
+
+      if (s.newServiceOpportunities && s.newServiceOpportunities.length > 0) {
+        html += `<div class="stat-card" style="margin-bottom:12px;border-left:3px solid var(--orange)"><div class="stat-label" style="color:var(--orange)">Oportunidades de Novos Serviços</div>`;
+        s.newServiceOpportunities.forEach(n => {
+          html += `<div style="font-size:13px;color:var(--text);margin-top:8px;padding-left:12px;border-left:2px solid var(--border)">
+            <div><strong>${n.name}:</strong> ${n.whatItWouldDo}</div>
+            <div><strong>Dor:</strong> ${n.realPain}</div>
+            <div><strong>Viabilidade:</strong> ${n.viability} | <strong>Escala:</strong> ${n.scalable}</div>
+            <div><strong>Preço:</strong> ${n.priceRange}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+
+      return html || '<p style="color:var(--text-sec)">Estratégia gerada sem dados estruturados.</p>';
     }
   </script>
 </body>

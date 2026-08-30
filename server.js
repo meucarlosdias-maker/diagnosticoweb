@@ -167,6 +167,129 @@ app.put('/api/templates/:id', checkAuth, (req, res) => {
   }
 });
 
+// ========== PROSPECTION API ==========
+app.post('/api/prospect', checkAuth, async (req, res) => {
+  try {
+    const { auditResult, formData } = req.body;
+    const PROSPECTION_PROMPT = `Você é o **Estrategista Comercial da BACY Agência**. Todo o seu atendimento e comunicação deve ser feito em Português do Brasil.
+
+## Catálogo de soluções da BACY:
+1. **Leadly** — atendimento via WhatsApp com IA, automação de respostas, qualificação de leads, agendamento, follow-up automático, CRM básico
+2. **Criação/reforma de site** — sites institucionais ou landing pages otimizadas, focadas em conversão e SEO
+3. **Gestão de Google Meu Negócio** — otimização de perfil, categoria, fotos, respostas a avaliações
+4. **Gestão de redes sociais** — produção de conteúdo, calendário editorial, consistência de marca
+5. **Gestão de reputação** — monitoramento e resposta a avaliações, captação de reviews positivos
+6. **Gestão de mídia paga** — Google Ads / Meta Ads, estruturação de campanhas, pixel, funil
+7. **Automação e integrações (n8n)** — fluxos personalizados além do Leadly
+
+## Regras:
+- Priorize soluções do catálogo atual
+- Se nenhuma resolver bem, proponha novo serviço como "oportunidade de expansão"
+- Ancore toda recomendação num achado real da auditoria
+- Seja direto e comercial — relatório interno
+- Não invente preços — use faixas (entrada/intermediário/avançado)
+
+## Formato de saída (JSON válido, sem markdown):
+{
+  "diagnosis": "resumo de 3-4 linhas puxando achados mais relevantes",
+  "primaryPain": { "finding": "...", "impact": "...", "solution": "..." },
+  "secondaryPains": [{ "finding": "...", "impact": "...", "solution": "..." }],
+  "openingHook": "frase pronta para usar na abordagem",
+  "approachChannel": "canal recomendado",
+  "approachTone": "tom",
+  "approachJustification": "justificativa",
+  "commercialOffer": { "entrySolution": "...", "upsellNatural": "...", "packageRange": "..." },
+  "objections": [{ "objection": "...", "response": "..." }],
+  "firstMessageScript": "roteiro de 3-5 frases pronto para copiar/colar",
+  "newServiceOpportunities": [{ "realPain": "...", "whatItWouldDo": "...", "viability": "...", "scalable": "...", "name": "...", "priceRange": "..." }]
+}`;
+
+    const f = auditResult.findings || {};
+    const plan = auditResult.actionPlan || {};
+    const comp = auditResult.competitorAnalysis || {};
+
+    const userPrompt = `Gere uma estratégia de prospecção completa baseada na auditoria abaixo.
+
+DADOS DA EMPRESA:
+- Nome: ${formData.companyName}
+- Segmento: ${formData.segment || 'Não informado'}
+- Site: ${formData.websiteUrl || 'Não informado'}
+- Instagram: ${formData.instagramUrl || 'Não informado'}
+- Score geral: ${auditResult.overallScore}/100
+
+RESUMO DA AUDITORIA:
+${auditResult.expertSummary || 'Não disponível'}
+
+ACHADOS POR CATEGORIA:
+
+1. SITE (${f.site?.status || 'N/A'}):
+   Evidência: ${f.site?.evidence || 'N/A'}
+   Risco: ${f.site?.risk || 'N/A'}
+   Ação: ${f.site?.action || 'N/A'}
+
+2. SEO / GOOGLE (${f.seo?.status || 'N/A'}):
+   Evidência: ${f.seo?.evidence || 'N/A'}
+   Risco: ${f.seo?.risk || 'N/A'}
+   Ação: ${f.seo?.action || 'N/A'}
+
+3. GOOGLE MEU NEGÓCIO (${f.gmb?.status || 'N/A'}):
+   Evidência: ${f.gmb?.evidence || 'N/A'}
+   Risco: ${f.gmb?.risk || 'N/A'}
+   Ação: ${f.gmb?.action || 'N/A'}
+
+4. INSTAGRAM/REDES SOCIAIS (${f.socialMedia?.status || 'N/A'}):
+   Evidência: ${f.socialMedia?.evidence || 'N/A'}
+   Risco: ${f.socialMedia?.risk || 'N/A'}
+   Ação: ${f.socialMedia?.action || 'N/A'}
+
+5. REPUTAÇÃO (${f.reputation?.status || 'N/A'}):
+   Evidência: ${f.reputation?.evidence || 'N/A'}
+   Risco: ${f.reputation?.risk || 'N/A'}
+   Ação: ${f.reputation?.action || 'N/A'}
+
+6. CONCORRÊNCIA:
+   Concorrentes: ${comp.competitors?.join(', ') || 'N/A'}
+   O que fazem melhor: ${comp.whatTheyDoBetter || 'N/A'}
+   Gap identificado: ${comp.identifiedGap || 'N/A'}
+
+7. PUBLICIDADE PAGA:
+   Status: ${auditResult.paidAds?.status || 'N/A'}
+   Evidência: ${auditResult.paidAds?.evidence || 'N/A'}
+
+PLANO DE AÇÃO DA AUDITORIA:
+- Resolver agora: ${plan.now?.join('; ') || 'N/A'}
+- Médio prazo: ${plan.shortTerm?.join('; ') || 'N/A'}
+- Estratégico: ${plan.strategic?.join('; ') || 'N/A'}
+
+ONDE A BACY PODE AJUDAR:
+${auditResult.whereWeCanHelp || 'Não disponível'}
+
+Gere a estratégia de prospecção seguindo o formato JSON do sistema. Seja específico, ancorado nos achados reais, e pronto para o time comercial usar imediatamente.`;
+
+    const result = await callNvidia(JSON.stringify({
+      model: 'moonshotai/kimi-k3',
+      messages: [
+        { role: 'system', content: PROSPECTION_PROMPT },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.4,
+      max_tokens: 10000
+    }));
+
+    let content = result.choices[0]?.message?.content || result.choices[0]?.message?.reasoning_content || '{}';
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+    try {
+      res.json(JSON.parse(content));
+    } catch (e) {
+      res.json({ rawText: content });
+    }
+  } catch (err) {
+    console.error('[PROSPECT] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ========== FIM ADMIN CRUD ==========
 app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
