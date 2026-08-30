@@ -104,16 +104,16 @@ function extractContent(html, url) {
  * Main AI Analysis — Agente BACY
  */
 export async function analyzeWithAI(formData) {
-  const { companyName, segment, instagramUrl, websiteUrl } = formData;
+  const { companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite } = formData;
 
   // Step 1: Fetch website content (Reconhecimento inicial)
   let websiteData = null;
-  if (websiteUrl) {
+  if (websiteUrl && hasWebsite !== false) {
     websiteData = await fetchWebsiteContent(websiteUrl);
   }
 
   // Step 2: Build and send BACY prompt
-  const bacyPrompt = buildBACYPrompt(companyName, segment, instagramUrl, websiteUrl, websiteData);
+  const bacyPrompt = buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, websiteData);
 
   const analysisResp = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
@@ -231,14 +231,18 @@ Você recebe 3 informações básicas do lead (nome da empresa, site, @ do Insta
 /**
  * Build the BACY investigation prompt
  */
-function buildBACYPrompt(companyName, segment, instagramUrl, websiteUrl, websiteData) {
+function buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, hasInstagram, hasWebsite, websiteData) {
+  const hasSite = hasWebsite !== false && websiteUrl;
+  const hasInsta = hasInstagram !== false && instagramUrl;
+
   let prompt = `Conduza uma auditoria completa da presença digital da empresa abaixo, seguindo o processo de investigação do Agente BACY.
 
 DADOS DO LEAD:
 - Nome da empresa: ${companyName}
 - Ramo de atuação: ${segment || 'Não informado'}
-- Site: ${websiteUrl || 'Não informado'}
-- Instagram: ${instagramUrl || 'Não informado'}`;
+- Cidade: ${city || 'Não informado'}
+- Site: ${hasSite ? websiteUrl : 'Empresa NÃO possui site'}
+- Instagram: ${hasInsta ? instagramUrl : 'Empresa NÃO possui perfil de Instagram'}`;
 
   if (websiteData) {
     prompt += `
@@ -267,10 +271,10 @@ DADOS EXTRAÍDOS DO SITE (Reconhecimento Inicial):
 
 INSTRUÇÕES DE INVESTIGAÇÃO (execute mentalmente cada passo):
 
-1. SITE: Avalie status, SSL, carregamento, design, CTA (WhatsApp/form/tel), mobile-friendly
-2. SEO: Busque "[nome empresa] [cidade]" e "[ramo] em [cidade]" — a empresa aparece? Como está posicionada?
+1. SITE: ${hasSite ? 'Avalie status, SSL, carregamento, design, CTA (WhatsApp/form/tel), mobile-friendly' : 'A empresa NÃO possui site — registre como achado CRÍTICO e recomende criação de site/landing page'}
+2. SEO: Busque "[nome empresa] ${city || '[cidade]'}" e "[ramo] em ${city || '[cidade]'}" — a empresa aparece? Como está posicionada?
 3. GOOGLE MEU NEGÓCIO: Verifique se existe perfil GMB — nome, categoria, endereço, horário, fotos, nota, avaliações
-4. INSTAGRAM/REDES: Avalie seguidores, posts, última postagem, qualidade visual, link na bio, Stories/Destaques, gestão profissional vs. abandonado
+4. INSTAGRAM/REDES: ${hasInsta ? 'Avalie seguidores, posts, última postagem, qualidade visual, link na bio, Stories/Destaques, gestão profissional vs. abandonado' : 'A empresa NÃO possui Instagram — registre como achado CRÍTICO e recomende criação e gestão de perfil'}
 5. REPUTAÇÃO: Verifique avaliações Google, Reclame Aqui, menções em redes sociais
 6. CONCORRÊNCIA: Identifique 2-3 concorrentes diretos posicionados no mesmo ramo/cidade
 7. PUBLICIDADE PAGA: Procure sinais de pixel Meta/Google no site, anúncios ativos
@@ -417,8 +421,9 @@ function buildProspectionPrompt(auditResult, formData) {
 DADOS DA EMPRESA:
 - Nome: ${formData.companyName}
 - Segmento: ${formData.segment || 'Não informado'}
-- Site: ${formData.websiteUrl || 'Não informado'}
-- Instagram: ${formData.instagramUrl || 'Não informado'}
+- Cidade: ${formData.city || 'Não informado'}
+- Site: ${formData.hasWebsite === false ? 'Não possui site' : (formData.websiteUrl || 'Não informado')}
+- Instagram: ${formData.hasInstagram === false ? 'Não possui Instagram' : (formData.instagramUrl || 'Não informado')}
 - Score geral: ${auditResult.overallScore}/100
 
 RESUMO DA AUDITORIA:

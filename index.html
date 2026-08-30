@@ -255,6 +255,24 @@
     .ai-btn:hover { border-color: var(--navy); }
     .ai-btn.selected { border-color: var(--navy); background: rgba(61,53,104,.04); }
 
+    /* ===== NO-HAVE BUTTON ===== */
+    .no-have-btn {
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 2px solid var(--bg-dark);
+      background: var(--white);
+      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sec);
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .no-have-btn:hover { border-color: var(--navy); color: var(--navy); }
+    .no-have-btn.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+
     /* ===== SCORE ===== */
     .score-ring {
       width: 100px; height: 100px;
@@ -423,8 +441,11 @@
       formData: {
         companyName: '',
         segment: '',
+        city: '',
         instagramUrl: '',
         websiteUrl: '',
+        hasInstagram: null,
+        hasWebsite: null,
         usesAI: null,
         aiDescription: ''
       },
@@ -513,18 +534,28 @@
                 <label class="field-label">Segmento / Setor *</label>
                 <input type="text" class="input-pill" id="segment" value="${state.formData.segment}" placeholder="Ex: Comércio varejista, Consultoria, Saúde" maxlength="100">
               </div>
+              <div>
+                <label class="field-label">Cidade *</label>
+                <input type="text" class="input-pill" id="city" value="${state.formData.city}" placeholder="Ex: São Paulo, Rio de Janeiro" maxlength="100">
+              </div>
             </div>
 
             <!-- Step 2 -->
             <div class="step-fields ${state.step !== 2 ? 'hidden' : ''}">
               <div>
-                <label class="field-label">Link do Instagram *</label>
-                <input type="url" class="input-pill" id="instagramUrl" value="${state.formData.instagramUrl}" placeholder="https://instagram.com/suaempresa">
+                <label class="field-label">Link do Instagram</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="url" class="input-pill" id="instagramUrl" value="${state.formData.instagramUrl}" placeholder="https://instagram.com/suaempresa" ${state.formData.hasInstagram === false ? 'disabled' : ''} style="flex:1">
+                  <button type="button" class="no-have-btn ${state.formData.hasInstagram === false ? 'selected' : ''}" id="noInstagram">Não tenho</button>
+                </div>
                 <p class="input-help">A IA vai analisar seu perfil, seguidores e conteúdo</p>
               </div>
               <div>
-                <label class="field-label">Link do Site *</label>
-                <input type="url" class="input-pill" id="websiteUrl" value="${state.formData.websiteUrl}" placeholder="https://www.seusite.com.br">
+                <label class="field-label">Link do Site</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="url" class="input-pill" id="websiteUrl" value="${state.formData.websiteUrl}" placeholder="https://www.seusite.com.br" ${state.formData.hasWebsite === false ? 'disabled' : ''} style="flex:1">
+                  <button type="button" class="no-have-btn ${state.formData.hasWebsite === false ? 'selected' : ''}" id="noWebsite">Não tenho</button>
+                </div>
                 <p class="input-help">A IA vai visitar e auditar seu site (SEO, design, tecnologia)</p>
               </div>
             </div>
@@ -838,8 +869,23 @@
       };
       bind('companyName', 'companyName');
       bind('segment', 'segment');
+      bind('city', 'city');
       bind('instagramUrl', 'instagramUrl');
       bind('websiteUrl', 'websiteUrl');
+
+      const noInstagram = document.getElementById('noInstagram');
+      if (noInstagram) noInstagram.addEventListener('click', () => {
+        state.formData.hasInstagram = state.formData.hasInstagram === false ? null : false;
+        if (state.formData.hasInstagram === false) { state.formData.instagramUrl = ''; }
+        render();
+      });
+
+      const noWebsite = document.getElementById('noWebsite');
+      if (noWebsite) noWebsite.addEventListener('click', () => {
+        state.formData.hasWebsite = state.formData.hasWebsite === false ? null : false;
+        if (state.formData.hasWebsite === false) { state.formData.websiteUrl = ''; }
+        render();
+      });
 
       const aiYes = document.getElementById('aiYes');
       const aiNo = document.getElementById('aiNo');
@@ -864,10 +910,13 @@
       if (state.step === 1) {
         if (!state.formData.companyName.trim()) { document.getElementById('companyName').classList.add('error'); document.getElementById('companyName').focus(); return false; }
         if (!state.formData.segment.trim()) { document.getElementById('segment').classList.add('error'); document.getElementById('segment').focus(); return false; }
+        if (!state.formData.city.trim()) { document.getElementById('city').classList.add('error'); document.getElementById('city').focus(); return false; }
       }
       if (state.step === 2) {
-        if (!state.formData.instagramUrl.trim()) { document.getElementById('instagramUrl').classList.add('error'); document.getElementById('instagramUrl').focus(); return false; }
-        if (!state.formData.websiteUrl.trim()) { document.getElementById('websiteUrl').classList.add('error'); document.getElementById('websiteUrl').focus(); return false; }
+        const hasInsta = state.formData.hasInstagram === false || state.formData.instagramUrl.trim();
+        const hasSite = state.formData.hasWebsite === false || state.formData.websiteUrl.trim();
+        if (!hasInsta) { document.getElementById('instagramUrl').classList.add('error'); document.getElementById('instagramUrl').focus(); return false; }
+        if (!hasSite) { document.getElementById('websiteUrl').classList.add('error'); document.getElementById('websiteUrl').focus(); return false; }
       }
       if (state.step === 3) {
         if (state.formData.usesAI === null) {
