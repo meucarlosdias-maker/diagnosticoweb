@@ -112,16 +112,22 @@ export async function analyzeWithAI(formData) {
     websiteData = await fetchWebsiteContent(websiteUrl);
   }
 
-  // Step 2: Fetch GMB data via Google Places API
+  // Step 2: Fetch GMB data via Google Places API (non-blocking, 8s timeout)
   let gmbData = null;
   if (hasGMB !== false && city) {
     try {
-      const gmbResp = await fetch(`${API_BASE}/api/gmb-lookup?company=${encodeURIComponent(companyName)}&city=${encodeURIComponent(city)}&segment=${encodeURIComponent(segment || '')}`);
+      const controller = new AbortController();
+      const gmbTimeout = setTimeout(() => controller.abort(), 8000);
+      const gmbResp = await fetch(`${API_BASE}/api/gmb-lookup?company=${encodeURIComponent(companyName)}&city=${encodeURIComponent(city)}&segment=${encodeURIComponent(segment || '')}`, { signal: controller.signal });
+      clearTimeout(gmbTimeout);
       if (gmbResp.ok) {
-        gmbData = await gmbResp.json();
+        const gmbJson = await gmbResp.json();
+        if (gmbJson.status !== 'REQUEST_DENIED' && gmbJson.status !== 'ERROR') {
+          gmbData = gmbJson;
+        }
       }
     } catch (e) {
-      console.error('GMB lookup failed:', e.message);
+      console.error('GMB lookup failed (continuing without):', e.message);
     }
   }
 

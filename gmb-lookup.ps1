@@ -9,14 +9,17 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
-# Google Places API key (free tier: $200/month credit)
-$API_KEY = "AIzaSyDUMMYKEYFORNOW"  # Substituir por chave real
+# Google Places API key (substituir por chave real)
+$API_KEY = "AIzaSyDUMMYKEYFORNOW"
 
-# Search query
+# Se a chave for dummy, retorna imediatamente (evita timeout desnecessário)
+if ($API_KEY -eq "AIzaSyDUMMYKEYFORNOW") {
+    [Console]::Write('{"status":"API_KEY_NOT_CONFIGURED","candidates":[]}')
+    exit 0
+}
+
 $query = "$CompanyName $City $Segment"
 $encodedQuery = [System.Uri]::EscapeDataString($query)
-
-# Find Place from Text (return all fields)
 $url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=$encodedQuery&inputtype=textquery&fields=place_id,name,formatted_address,formatted_phone_number,website,rating,user_rating_total,reviews,opening_hours,photos,types,url&key=$API_KEY"
 
 try {
@@ -24,7 +27,7 @@ try {
     $request.Method = "GET"
     $request.ContentType = 'application/json'
     $request.Accept = 'application/json'
-    $request.Timeout = 60000
+    $request.Timeout = 10000
 
     $response = $request.GetResponse()
     $responseStream = $response.GetResponseStream()
@@ -33,11 +36,9 @@ try {
     $reader.Close()
     $response.Close()
 
-    # Output JSON
     [Console]::Write($responseBody)
 }
 catch {
-    # Return error JSON
     $errorJson = @{ error = $($_.Exception.Message); status = "ERROR" } | ConvertTo-Json
     [Console]::Write($errorJson)
 }
