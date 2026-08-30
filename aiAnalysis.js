@@ -125,7 +125,7 @@ export async function analyzeWithAI(formData) {
         { role: 'user', content: bacyPrompt }
       ],
       temperature: 0.3,
-      max_tokens: 4000
+      max_tokens: 2000
     })
   });
 
@@ -153,25 +153,33 @@ export async function analyzeWithAI(formData) {
 /**
  * System prompt — Agente BACY
  */
-const BACY_SYSTEM_PROMPT = `Você é o Auditor Digital da BACY Agência. Analise a presença digital de empresas brasileiras. Responda APENAS em JSON válido, sem markdown.
+const BACY_SYSTEM_PROMPT = `Você é o Auditor Digital da BACY Agência. Analise presença digital de empresas brasileiras. Retorne APENAS JSON válido.
 
-## Processo
-1. Site: analise SSL, mobile, design, CTAs, velocidade
-2. SEO local: busque "[empresa] [cidade]" no Google
-3. Google Meu Negócio: busque listagem pública (nota, avaliações, fotos, horário)
-4. Instagram: tente acessar perfil público; busque no Google se bloqueado
-5. Reputação: avalie reviews, Reclame Aqui
-6. Concorrência: identifique 2-3 concorrentes
-7. Redes sociais: verifique Facebook, LinkedIn, TikTok
+## O que PRECISA verificar (foco em dados públicos):
 
-## Regras
-- Se não encontrar dado, marque "não localizado"
-- "Não verificado" só após 2+ tentativas
-- Dados do site já fornecidos abaixo — use-os
+1. **Google Meu Negócio** (PRIORIDADE #1):
+   - Perfil existe publicamente? (busque "[nome] [cidade]" no Google)
+   - Se existir: nota média, número de avaliações, horário de funcionamento, fotos cadastradas
+   - Se NÃO existir: registre como CRÍTICO
+
+2. **Instagram** (PRIORIDADE #2):
+   - Perfil existe? (verifique @{instagram} informado)
+   - Se existir: número de seguidores, última postagem (data), quantos posts no feed
+   - Se NÃO existir ou estiver privado: registre como pendente
+
+3. **Site** (SE houver, já fornecido abaixo):
+   - SSL ativo? Responsivo? Tem WhatsApp/Contato visível?
+   - Se NÃO houver: registre como "Empresa não possui site"
+
+## Regras rigorosas:
+- Se não encontrar dado, marque "não localizado" — NÃO invente
+- Apenas dados PÚBLICOS e pesquisáveis (Google Maps, Instagram público)
+- "Não verificado" só após tentativa real de busca
 - Português do Brasil
+- NÃO mencione nomes de ferramentas ou preços
 
-## JSON de saída:
-{"overallScore":0-100,"categoryScores":{"site":0-100,"seo":0-100,"gmb":0-100,"socialMedia":0-100,"reputation":0-100},"expertSummary":"4-6 linhas","findings":{"site":{"status":"Bom|Ruim|Crítico|Não verificado","evidence":"...", "risk":"...", "action":"..."},"seo":{"status":"...","evidence":"...","risk":"...","action":"..."},"gmb":{"status":"...","evidence":"...","risk":"...","action":"..."},"socialMedia":{"status":"...","evidence":"...","risk":"...","action":"..."},"reputation":{"status":"...","evidence":"...","risk":"...","action":"..."}},"competitorAnalysis":{"competitors":["c1","c2"],"whatTheyDoBetter":"...","identifiedGap":"..."},"paidAds":{"status":"Verificado|Não verificável","evidence":"..."},"actionPlan":{"now":["ação1"],"shortTerm":["ação2"],"strategic":["ação3"]},"whereWeCanHelp":"..."}`;
+## JSON de saída obrigatório:
+{"overallScore":0-100,"categoryScores":{"site":0-100,"seo":0-100,"gmb":0-100,"socialMedia":0-100,"reputation":0-100},"expertSummary":"3-5 linhas: maior risco, maior oportunidade, gancho comercial","findings":{"site":{"status":"Bom|Ruim|Crítico|Não verificado","evidence":"...","risk":"...","action":"..."},"seo":{"status":"...","evidence":"...","risk":"...","action":"..."},"gmb":{"status":"...","evidence":"...","risk":"...","action":"..."},"socialMedia":{"status":"...","evidence":"...","risk":"...","action":"..."},"reputation":{"status":"...","evidence":"...","risk":"...","action":"..."}},"competitorAnalysis":{"competitors":[],"whatTheyDoBetter":"","identifiedGap":""},"paidAds":{"status":"Verificado|Não verificável","evidence":"..."},"actionPlan":{"now":["ação1"],"shortTerm":["ação2"],"strategic":["ação3"]},"whereWeCanHelp":"..."}`;
 
 /**
  * Build the BACY investigation prompt
@@ -182,15 +190,27 @@ function buildBACYPrompt(companyName, segment, city, instagramUrl, websiteUrl, h
   const gmbInformed = hasGMB !== null && hasGMB !== undefined;
 
   let prompt = `Auditoria BACY — empresa: ${companyName}, ramo: ${segment || 'informado'}, cidade: ${city || 'informado'}.
-Site: ${hasSite ? websiteUrl : 'NÃO possui'} | Instagram: ${hasInsta ? instagramUrl : 'NÃO possui'} | GMB: ${gmbInformed ? (hasGMB ? 'Sim' : 'Não') : 'Verificar'}`;
+
+Dados do lead:
+- Site: ${hasSite ? websiteUrl : 'Não possui'}
+- Instagram: ${hasInsta ? instagramUrl : 'Não possui'}
+- GMB: ${gmbInformed ? (hasGMB ? 'Sim (confirmado pelo cliente)' : 'Não (cliente informou)') : 'Não informado — verificar'}`;
 
   if (websiteData) {
     prompt += `
-Site encontrado: título="${websiteData.title}", desc="${websiteData.description?.slice(0,150)}", SSL=${websiteData.hasSSL?'Sim':'Não'}, mobile=${websiteData.hasViewport?'Sim':'Não'}, tech=${websiteData.techIndicators.join(',')||'N/A'}, WhatsApp=${websiteData.hasWhatsApp?'Sim':'Não'}, form=${websiteData.hasContactForm?'Sim':'Não'}, imagens=${websiteData.images?.length||0}`;
+Dados do site já coletados:
+- Título: ${websiteData.title?.slice(0,100) || 'N/A'}
+- Descrição: ${websiteData.description?.slice(0,200) || 'N/A'}
+- SSL: ${websiteData.hasSSL ? 'Sim' : 'Não'}
+- Mobile: ${websiteData.hasViewport ? 'Sim' : 'Não'}
+- WhatsApp no site: ${websiteData.hasWhatsApp ? 'Sim' : 'Não'}
+- Formulário: ${websiteData.hasContactForm ? 'Sim' : 'Não'}
+- Tecnologias: ${websiteData.techIndicators?.join(', ') || 'Nenhuma detectada'}
+- Imagens: ${websiteData.images?.length || 0} (${websiteData.images?.filter(i => i.alt).length || 0} com alt text)`;
   }
 
   prompt += `
-Analise a presença digital e retorne JSON conforme formato do sistema. Score realista, sem medalhas.`;
+Analise conforme as prioridades do sistema e retorne JSON. Score realista — sem medalhas de participação.`;
 
   return prompt;
 }
