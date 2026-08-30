@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFile } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 
@@ -11,36 +11,46 @@ const PORT = 3000;
 const AI_API_KEY = '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';
 const PS_SCRIPT = path.join(__dirname, 'api-call.ps1');
 
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled Rejection:', reason);
+});
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname)));
 
-function callNvidia(body) {
-  const tmpFile = path.join(os.tmpdir(), `nvidia_${Date.now()}.json`);
-  fs.writeFileSync(tmpFile, body, 'utf8');
-  try {
-    const result = execFileSync('powershell', [
+function callNvidiaAsync(body) {
+  return new Promise((resolve, reject) => {
+    const tmpFile = path.join(os.tmpdir(), `nvidia_${Date.now()}.json`);
+    fs.writeFileSync(tmpFile, body, 'utf8');
+    execFile('powershell', [
       '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', PS_SCRIPT,
       '-Method', 'POST',
       '-Url', 'https://integrate.api.nvidia.com/v1/chat/completions',
       '-BodyPath', tmpFile,
       '-Auth', `Bearer ${AI_API_KEY}`
-    ], { encoding: 'utf8', timeout: 300000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
-    try { fs.unlinkSync(tmpFile); } catch(e) {}
-    return JSON.parse(result.trim());
-  } catch (err) {
-    try { fs.unlinkSync(tmpFile); } catch(e) {}
-    const msg = err.stdout ? err.stdout.trim() : err.stderr ? err.stderr.trim() : err.message;
-    throw new Error(msg);
-  }
+    ], { encoding: 'utf8', timeout: 300000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }, (err, stdout, stderr) => {
+      try { fs.unlinkSync(tmpFile); } catch(e) {}
+      if (err) {
+        const msg = stdout ? stdout.trim() : stderr ? stderr.trim() : err.message;
+        return reject(new Error(msg));
+      }
+      try {
+        resolve(JSON.parse(stdout.trim()));
+      } catch (e) {
+        reject(new Error('Failed to parse AI response: ' + stdout.slice(0, 200)));
+      }
+    });
+  });
 }
 
-// Proxy: Chat completions (NVIDIA API via PowerShell)
 app.post('/api/chat', async (req, res) => {
   try {
     const body = JSON.stringify(req.body);
-    console.log(`[API] Request body length: ${body.length} chars`);
-    const data = callNvidia(body);
+    console.log(`[API] POST /api/chat - body length: ${body.length} chars`);
+    const data = await callNvidiaAsync(body);
     console.log(`[API] Response OK, choices: ${data.choices?.length}`);
     res.json(data);
   } catch (err) {
@@ -49,7 +59,6 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// ========== ADMIN ROUTES ==========
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
@@ -57,15 +66,10 @@ app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// ========== ADMIN CRUD ==========
-
-// Middleware de autenticação simples
 function checkAuth(req, res, next) {
-  // Por enquanto, aceita todas as requisições (auth feita no frontend)
   next();
 }
 
-// LISTAR todos os diagnósticos
 app.get('/api/diagnostics', checkAuth, (req, res) => {
   try {
     const dados = fs.readFileSync(path.join(__dirname, 'diagnostics.json'), 'utf8');
@@ -75,18 +79,24 @@ app.get('/api/diagnostics', checkAuth, (req, res) => {
   }
 });
 
-// SALVAR novo diagnóstico
-app.post('/api/diagnostics', checkAuth, (req, res) => {
+app.post('/api/diagnostics', (req, res) => {
   try {
+    const companyName = req.body?.companyName;
+    console.log('[SAVE] POST /api/diagnostics for:', companyName);
     const filePath = path.join(__dirname, 'diagnostics.json');
     let lista = { diagnostics: [] };
     try {
       const dados = fs.readFileSync(filePath, 'utf8');
       lista = JSON.parse(dados);
     } catch(e) {}
-    
+
     const novo = {
-      ...req.body,
+      companyName: req.body.companyName || '',
+      segment: req.body.segment || '',
+      formData: req.body.formData || {},
+      result: req.body.result || null,
+      formattedData: req.body.formattedData || {},
+      pdfGenerated: req.body.pdfGenerated || false,
       _id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       status: 'pending',
@@ -94,27 +104,25 @@ app.post('/api/diagnostics', checkAuth, (req, res) => {
       followUpSent: false,
       notes: ''
     };
-    
+
     lista.diagnostics.push(novo);
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
+    console.log('[SAVE] Diagnostic saved:', novo._id, '- company:', novo.companyName);
     res.json({ success: true, id: novo._id });
   } catch (e) {
+    console.error('[SAVE] Error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
-// Atualizar diagnóstico
 app.put('/api/diagnostics/:id', checkAuth, (req, res) => {
   try {
     const filePath = path.join(__dirname, 'diagnostics.json');
     const dados = fs.readFileSync(filePath, 'utf8');
     const lista = JSON.parse(dados);
-    
     const idx = lista.diagnostics.findIndex(d => d._id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'Diagnóstico não encontrado' });
-    
     lista.diagnostics[idx] = { ...lista.diagnostics[idx], ...req.body, updatedAt: new Date().toISOString() };
-    
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
     res.json({ success: true });
   } catch (e) {
@@ -122,15 +130,12 @@ app.put('/api/diagnostics/:id', checkAuth, (req, res) => {
   }
 });
 
-// Deletar diagnóstico
 app.delete('/api/diagnostics/:id', checkAuth, (req, res) => {
   try {
     const filePath = path.join(__dirname, 'diagnostics.json');
     const dados = fs.readFileSync(filePath, 'utf8');
     const lista = JSON.parse(dados);
-    
     lista.diagnostics = lista.diagnostics.filter(d => d._id !== req.params.id);
-    
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
     res.json({ success: true });
   } catch (e) {
@@ -138,7 +143,6 @@ app.delete('/api/diagnostics/:id', checkAuth, (req, res) => {
   }
 });
 
-// LISTAR templates
 app.get('/api/templates', checkAuth, (req, res) => {
   try {
     const dados = fs.readFileSync(path.join(__dirname, 'templates.json'), 'utf8');
@@ -148,18 +152,14 @@ app.get('/api/templates', checkAuth, (req, res) => {
   }
 });
 
-// Atualizar template
 app.put('/api/templates/:id', checkAuth, (req, res) => {
   try {
     const filePath = path.join(__dirname, 'templates.json');
     const dados = fs.readFileSync(filePath, 'utf8');
     const lista = JSON.parse(dados);
-    
     const idx = lista.templates.findIndex(t => t._id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'Template não encontrado' });
-    
     lista.templates[idx] = { ...lista.templates[idx], ...req.body };
-    
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
     res.json({ success: true });
   } catch (e) {
@@ -167,9 +167,6 @@ app.put('/api/templates/:id', checkAuth, (req, res) => {
   }
 });
 
-// ========== APPOINTMENTS API ==========
-
-// LISTAR agendamentos
 app.get('/api/appointments', checkAuth, (req, res) => {
   try {
     const dados = fs.readFileSync(path.join(__dirname, 'appointments.json'), 'utf8');
@@ -179,9 +176,9 @@ app.get('/api/appointments', checkAuth, (req, res) => {
   }
 });
 
-// CRIAR agendamento (público — lead agenda)
 app.post('/api/appointments', (req, res) => {
   try {
+    console.log('[APPT] POST /api/appointments for:', req.body?.companyName);
     const filePath = path.join(__dirname, 'appointments.json');
     let lista = { appointments: [] };
     try {
@@ -198,22 +195,21 @@ app.post('/api/appointments', (req, res) => {
 
     lista.appointments.push(novo);
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
+    console.log('[APPT] Appointment saved:', novo._id);
     res.json({ success: true, appointment: novo });
   } catch (e) {
+    console.error('[APPT] Error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
-// ATUALIZAR status do agendamento
 app.put('/api/appointments/:id', checkAuth, (req, res) => {
   try {
     const filePath = path.join(__dirname, 'appointments.json');
     const dados = fs.readFileSync(filePath, 'utf8');
     const lista = JSON.parse(dados);
-
     const idx = lista.appointments.findIndex(a => a._id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: 'Agendamento não encontrado' });
-
     lista.appointments[idx] = { ...lista.appointments[idx], ...req.body };
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
     res.json({ success: true });
@@ -222,13 +218,11 @@ app.put('/api/appointments/:id', checkAuth, (req, res) => {
   }
 });
 
-// DELETAR agendamento
 app.delete('/api/appointments/:id', checkAuth, (req, res) => {
   try {
     const filePath = path.join(__dirname, 'appointments.json');
     const dados = fs.readFileSync(filePath, 'utf8');
     const lista = JSON.parse(dados);
-
     lista.appointments = lista.appointments.filter(a => a._id !== req.params.id);
     fs.writeFileSync(filePath, JSON.stringify(lista, null, 2));
     res.json({ success: true });
@@ -237,7 +231,6 @@ app.delete('/api/appointments/:id', checkAuth, (req, res) => {
   }
 });
 
-// ========== PROSPECTION API ==========
 app.post('/api/prospect', checkAuth, async (req, res) => {
   try {
     const { auditResult, formData } = req.body;
@@ -336,7 +329,7 @@ ${auditResult.whereWeCanHelp || 'Não disponível'}
 
 Gere a estratégia de prospecção seguindo o formato JSON do sistema. Seja específico, ancorado nos achados reais, e pronto para o time comercial usar imediatamente.`;
 
-    const result = await callNvidia(JSON.stringify({
+    const result = await callNvidiaAsync(JSON.stringify({
       model: 'moonshotai/kimi-k3',
       messages: [
         { role: 'system', content: PROSPECTION_PROMPT },
@@ -360,7 +353,8 @@ Gere a estratégia de prospecção seguindo o formato JSON do sistema. Seja espe
   }
 });
 
-// ========== FIM ADMIN CR
+app.use(express.static(path.join(__dirname)));
+
 app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

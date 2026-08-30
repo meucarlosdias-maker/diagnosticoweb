@@ -521,17 +521,22 @@
     };
 
     // ========== SAVE DIAGNOSTIC ==========
+    let lastSavedId = null;
+
     async function saveDiagnosticToBackend(name, phone) {
       try {
+        const cleanResult = state.result ? { ...state.result } : null;
+        if (cleanResult) delete cleanResult.websiteData;
+
         const diagnosticData = {
           companyName: state.formData.companyName,
           segment: state.formData.segment,
           formData: { ...state.formData },
-          result: state.result ? { ...state.result } : null,
+          result: cleanResult,
           formattedData: { name: name || state.leadName || '', phone: phone || state.leadPhone || '' },
           pdfGenerated: true
         };
-        console.log('[SAVE] Sending diagnostic...', diagnosticData.companyName);
+        console.log('[SAVE] POST /api/diagnostics —', diagnosticData.companyName, '— result size:', JSON.stringify(cleanResult).length, 'chars');
         const resp = await fetch('/api/diagnostics', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -539,8 +544,11 @@
         });
         const data = await resp.json();
         console.log('[SAVE] Response:', resp.status, data);
+        if (data.id) lastSavedId = data.id;
+        return data;
       } catch (e) {
         console.error('[SAVE] ERRO ao salvar diagnóstico:', e);
+        throw e;
       }
     }
 
@@ -1029,6 +1037,8 @@
         };
         console.log('[SCHED] Sending appointment...', payload);
         try {
+          await saveDiagnosticToBackend(schedName, schedPhone);
+
           const resp = await fetch('/api/appointments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1040,7 +1050,6 @@
           if (resp.ok && data.success) {
             state.leadName = schedName;
             state.leadPhone = schedPhone;
-            await saveDiagnosticToBackend(schedName, schedPhone);
             state.showScheduler = false;
             state.showThankYou = true;
             render();
@@ -1223,8 +1232,6 @@
         state.showPopup = true;
         state.isAnalyzing = false;
         render();
-        // Auto-save diagnostic even before popup
-        saveDiagnosticToBackend('', '').catch(e => console.error('Auto-save before popup:', e));
       } catch (err) {
         clearInterval(phaseInterval);
         console.error('Analysis error:', err);

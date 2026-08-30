@@ -9,32 +9,27 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const diagnostics = (await redis.get('diagnostics')) || [];
-      return res.status(200).json({ diagnostics });
+      const appointments = (await redis.get('appointments')) || [];
+      return res.status(200).json({ appointments });
     } catch (e) {
-      console.error('[DIAG] GET error:', e.message);
-      return res.status(200).json({ diagnostics: [] });
+      return res.status(200).json({ appointments: [] });
     }
   }
 
   if (req.method === 'POST') {
     try {
-      const diagnostics = (await redis.get('diagnostics')) || [];
+      const appointments = (await redis.get('appointments')) || [];
       const novo = {
         ...req.body,
         _id: Date.now().toString(),
         createdAt: new Date().toISOString(),
-        status: 'pending',
-        sentVia: 'none',
-        followUpSent: false,
-        notes: ''
+        status: 'pending'
       };
-      diagnostics.push(novo);
-      await redis.set('diagnostics', diagnostics);
-      console.log('[DIAG] Saved:', novo._id, novo.companyName);
-      return res.status(200).json({ success: true, id: novo._id });
+      appointments.push(novo);
+      await redis.set('appointments', appointments);
+      console.log('[APPT] Saved:', novo._id, novo.companyName);
+      return res.status(200).json({ success: true, appointment: novo });
     } catch (e) {
-      console.error('[DIAG] POST error:', e.message);
       return res.status(500).json({ error: e.message });
     }
   }

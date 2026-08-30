@@ -1,7 +1,4 @@
 {
-  "framework": null,
-  "outputDirectory": ".",
-  "buildCommand": "echo ok",
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" }
   ]
